@@ -36,5 +36,6 @@ func main() {
 	}
 	if err = comm.ExecuteCommand(command); err != nil {
 		logger.Error.Printf("Executing command failed: %v", err)
+		os.Exit(1)
 	}
 }
