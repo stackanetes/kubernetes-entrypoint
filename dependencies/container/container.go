@@ -2,8 +2,8 @@ package container
 
 import (
 	"fmt"
-	entry "github.com/stackanetes/docker-entrypoint/dependencies"
-	"github.com/stackanetes/docker-entrypoint/util/env"
+	entry "github.com/stackanetes/kubernetes-entrypoint/dependencies"
+	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 	"os"
 )
 
@@ -36,7 +36,7 @@ func (c Container) IsResolved(entrypoint *entry.Entrypoint) (bool, error) {
 	}
 	containers := pod.Status.ContainerStatuses
 	for _, container := range containers {
-		if container.Name == c.GetName() && container.State.Running != nil {
+		if container.Name == c.GetName() && container.Ready {
 			return true, nil
 		}
 	}

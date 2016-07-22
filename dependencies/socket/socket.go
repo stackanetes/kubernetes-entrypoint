@@ -2,8 +2,8 @@ package socket
 
 import (
 	"fmt"
-	entry "github.com/stackanetes/docker-entrypoint/dependencies"
-	"github.com/stackanetes/docker-entrypoint/util/env"
+	entry "github.com/stackanetes/kubernetes-entrypoint/dependencies"
+	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 	"os"
 )
 
