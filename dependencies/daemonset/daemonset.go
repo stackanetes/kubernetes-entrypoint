@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	entry "github.com/stackanetes/docker-entrypoint/dependencies"
-	"github.com/stackanetes/docker-entrypoint/logger"
-	"github.com/stackanetes/docker-entrypoint/util/env"
+	entry "github.com/stackanetes/kubernetes-entrypoint/dependencies"
+	"github.com/stackanetes/kubernetes-entrypoint/logger"
+	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/labels"
 )
@@ -53,7 +53,7 @@ func (d Daemonset) IsResolved(entrypoint *entry.Entrypoint) (bool, error) {
 	myHost := myPod.Status.HostIP
 
 	for _, pod := range pods.Items {
-		if !podReady(&pod) {
+		if !api.IsPodReady(&pod) {
 			return false, fmt.Errorf("Pod %v of daemonset %v is not ready", pod.Name, d.GetName())
 		}
 
@@ -66,15 +66,6 @@ func (d Daemonset) IsResolved(entrypoint *entry.Entrypoint) (bool, error) {
 
 func (d Daemonset) GetName() string {
 	return d.name
-}
-
-func podReady(pod *api.Pod) bool {
-	for _, cond := range pod.Status.Conditions {
-		if cond.Type == api.PodReady && cond.Status == api.ConditionTrue {
-			return true
-		}
-	}
-	return false
 }
 
 func isPodOnHost(podList []api.Pod, hostIP string) bool {

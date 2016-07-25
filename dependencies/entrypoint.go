@@ -1,7 +1,7 @@
 package entrypoint
 
 import (
-	"github.com/stackanetes/docker-entrypoint/logger"
+	"github.com/stackanetes/kubernetes-entrypoint/logger"
 	//	"k8s.io/kubernetes/pkg/client/restclient"
 	"fmt"
 	cl "k8s.io/kubernetes/pkg/client/unversioned"

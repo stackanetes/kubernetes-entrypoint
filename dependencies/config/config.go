@@ -8,9 +8,9 @@ import (
 	"strings"
 	"text/template"
 
-	entry "github.com/stackanetes/docker-entrypoint/dependencies"
-	"github.com/stackanetes/docker-entrypoint/logger"
-	"github.com/stackanetes/docker-entrypoint/util/env"
+	entry "github.com/stackanetes/kubernetes-entrypoint/dependencies"
+	"github.com/stackanetes/kubernetes-entrypoint/logger"
+	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
 
 type Config struct {
