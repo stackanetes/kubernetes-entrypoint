@@ -33,8 +33,5 @@ func main() {
 		logger.Error.Printf("COMMAND env is empty")
 		os.Exit(1)
 	}
-	if err = comm.ExecuteCommand(command); err != nil {
-		logger.Error.Printf("Executing command failed: %v", err)
-		os.Exit(1)
-	}
+	comm.ExecuteCommand(command)
 }
