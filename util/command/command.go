@@ -17,7 +17,7 @@ func ExecuteCommand(command []string) error {
 		Stderr: os.Stderr,
 	}
 
-	err = cmd.Run()
+	err = cmd.Start()
 	if err != nil {
 		return err
 	}
