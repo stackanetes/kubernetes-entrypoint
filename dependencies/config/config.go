@@ -40,8 +40,8 @@ func NewConfig(name string) Config {
 		logger.Error.Print("Environment variable INTERFACE_NAME not set")
 		os.Exit(1)
 	}
-	hostname := os.Getenv("HOSTNAME")
-	if hostname == "" {
+	hostname, err := os.Hostname()
+	if err != nil {
 		logger.Error.Print("Environment variable HOSTNAME not set")
 	}
 	config.params.HOSTNAME = hostname
