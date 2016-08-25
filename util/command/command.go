@@ -3,24 +3,23 @@ package command
 import (
 	"os"
 	"os/exec"
+	"syscall"
+
+	"github.com/stackanetes/kubernetes-entrypoint/logger"
 )
 
-func ExecuteCommand(command []string) error {
+func ExecuteCommand(command []string) {
 	path, err := exec.LookPath(command[0])
 	if err != nil {
-		return err
-	}
-	cmd := exec.Cmd{
-		Path:   path,
-		Args:   command,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
+		logger.Error.Printf("Cannot find a binary %v : %v", command[0], err)
+		os.Exit(1)
 	}
 
-	err = cmd.Run()
+	env := os.Environ()
+	err = syscall.Exec(path, command, env)
 	if err != nil {
-		return err
+		logger.Error.Print("Executing command %v failed: %v", command, err)
+		os.Exit(1)
 	}
 
-	return nil
 }
