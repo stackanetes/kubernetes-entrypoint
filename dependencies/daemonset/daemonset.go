@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	entry "github.com/stackanetes/kubernetes-entrypoint/dependencies"
+	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 	"k8s.io/kubernetes/pkg/api"
@@ -19,12 +19,12 @@ func init() {
 	daemonsetEnv := fmt.Sprintf("%sDAEMONSET", entry.DependencyPrefix)
 	if daemonsetsDeps := env.SplitEnvToList(daemonsetEnv); daemonsetsDeps != nil {
 		for _, dep := range daemonsetsDeps {
-			entry.Register(NewDaemonset(dep))
+			entry.Register(NewDaemonSet(dep))
 		}
 	}
 }
 
-func NewDaemonset(name string) Daemonset {
+func NewDaemonSet(name string) Daemonset {
 	return Daemonset{name: name}
 }
 
