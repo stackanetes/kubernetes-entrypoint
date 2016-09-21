@@ -12,17 +12,18 @@ import (
 
 var dependencies []Resolver // List containing all dependencies to be resolved
 const (
-	DependencyPrefix = "DEPENDENCY_" //Prefix for env variables
+	//DependencyPrefix is a prefix for env variables
+	DependencyPrefix = "DEPENDENCY_"
 	interval         = 2
 )
 
-// Object containing k8s client
+// Entrypoint is a main struct which check dependencies
 type Entrypoint struct {
 	Client    *cl.Client
 	Namespace string
 }
 
-//Constructor for entrypoint
+//New is a constructor for entrypoint
 func New(client *cl.Client) (entry *Entrypoint, err error) {
 	entry = new(Entrypoint)
 	if entry.Client = client; client == nil {
@@ -38,6 +39,7 @@ func New(client *cl.Client) (entry *Entrypoint, err error) {
 	return entry, err
 }
 
+//Resolve is a main loop whic iterates through all dependencies and resolves them
 func (e *Entrypoint) Resolve() {
 	var wg sync.WaitGroup
 	for _, dep := range dependencies {
@@ -61,11 +63,13 @@ func (e *Entrypoint) Resolve() {
 
 }
 
+//Resolver is an interface which all dependencies should implement
 type Resolver interface {
 	IsResolved(entrypoint *Entrypoint) (bool, error)
 	GetName() string
 }
 
+//Register is a function which register new dependencies
 func Register(res Resolver) {
 	if res == nil {
 		panic("Entrypoint: could not register nil Resolver")
