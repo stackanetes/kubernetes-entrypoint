@@ -23,7 +23,7 @@ type Entrypoint struct {
 }
 
 //Constructor for entrypoint
-func NewEntrypoint(client *cl.Client) (entry *Entrypoint, err error) {
+func New(client *cl.Client) (entry *Entrypoint, err error) {
 	entry = new(Entrypoint)
 	if entry.Client = client; client == nil {
 		if entry.Client, err = cl.NewInCluster(); err != nil {
@@ -62,7 +62,6 @@ func (e *Entrypoint) Resolve() {
 }
 
 type Resolver interface {
-	//	GetType() string
 	IsResolved(entrypoint *Entrypoint) (bool, error)
 	GetName() string
 }
