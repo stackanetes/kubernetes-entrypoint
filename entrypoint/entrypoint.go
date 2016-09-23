@@ -22,7 +22,7 @@ type EntrypointInterface interface {
 	GetNamespace() string
 }
 
-// Entrypoint is a main struct which check dependencies
+// Entrypoint is a main struct which checks dependencies
 type Entrypoint struct {
 	client    cli.ClientInterface
 	namespace string
@@ -51,7 +51,7 @@ func (e Entrypoint) GetNamespace() string {
 	return e.namespace
 }
 
-//Resolve is a main loop whic iterates through all dependencies and resolves them
+//Resolve is a main loop which iterates through all dependencies and resolves them
 func (e Entrypoint) Resolve() {
 	var wg sync.WaitGroup
 	for _, dep := range dependencies {
@@ -81,7 +81,7 @@ type Resolver interface {
 	GetName() string
 }
 
-//Register is a function which register new dependencies
+//Register is a function which registers new dependencies
 func Register(res Resolver) {
 	if res == nil {
 		panic("Entrypoint: could not register nil Resolver")

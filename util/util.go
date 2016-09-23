@@ -8,8 +8,8 @@ import (
 )
 
 func GetIp() (ip string, err error) {
-	iface := os.Getenv("INTERFACE_NAME")
-	if iface == "" {
+	var iface string
+	if iface = os.Getenv("INTERFACE_NAME"); iface == "" {
 		return "", fmt.Errorf("Environment variable INTERFACE_NAME not set")
 	}
 	i, err := net.InterfaceByName(iface)

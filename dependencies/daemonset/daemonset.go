@@ -5,7 +5,6 @@ import (
 	"os"
 
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
-	"github.com/stackanetes/kubernetes-entrypoint/logger"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/labels"
@@ -19,36 +18,34 @@ func init() {
 	daemonsetEnv := fmt.Sprintf("%sDAEMONSET", entry.DependencyPrefix)
 	if daemonsetsDeps := env.SplitEnvToList(daemonsetEnv); daemonsetsDeps != nil {
 		for _, dep := range daemonsetsDeps {
-			entry.Register(NewDaemonSet(dep))
+			entry.Register(NewDaemonset(dep))
 		}
 	}
 }
 
-func NewDaemonSet(name string) Daemonset {
+func NewDaemonset(name string) Daemonset {
 	return Daemonset{name: name}
 }
 
 func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
+	var myPodName string
 	daemonset, err := entrypoint.Client().DaemonSets(entrypoint.GetNamespace()).Get(d.GetName())
 	if err != nil {
 		return false, err
 	}
+
 	label := labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels)
 	opts := api.ListOptions{LabelSelector: label}
 	pods, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).List(opts)
 	if err != nil {
 		return false, err
 	}
-	myPodName := os.Getenv("POD_NAME")
-	if myPodName == "" {
-		logger.Error.Print("Environment variable POD_NAME not set")
-		os.Exit(1)
-
+	if myPodName := os.Getenv("POD_NAME"); myPodName == "" {
+		panic("Environment variable POD_NAME not set")
 	}
 	myPod, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).Get(myPodName)
 	if err != nil {
-		logger.Error.Printf("Getting POD: %v failed : %v", myPodName, err)
-		os.Exit(1)
+		panic(fmt.Sprintf("Getting POD: %v failed : %v", myPodName, err))
 	}
 	myHost := myPod.Status.HostIP
 
