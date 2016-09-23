@@ -34,8 +34,7 @@ func main() {
 		os.Exit(1)
 
 	}
-	err = command.Execute(comm)
-	if err != nil {
+	if err = command.Execute(comm); err != nil {
 		logger.Error.Printf("Cannot execute command: %v", err)
 		os.Exit(1)
 	}
