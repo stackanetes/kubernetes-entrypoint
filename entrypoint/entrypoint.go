@@ -1,10 +1,9 @@
 package entrypoint
 
 import (
+	cli "github.com/stackanetes/kubernetes-entrypoint/client"
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
-	//	"k8s.io/kubernetes/pkg/client/restclient"
-	"fmt"
-	cl "k8s.io/kubernetes/pkg/client/unversioned"
+	restclient "k8s.io/kubernetes/pkg/client/restclient"
 	"os"
 	"sync"
 	"time"
@@ -17,30 +16,43 @@ const (
 	interval         = 2
 )
 
+type EntrypointInterface interface {
+	Resolve()
+	Client() cli.ClientInterface
+	GetNamespace() string
+}
+
 // Entrypoint is a main struct which check dependencies
 type Entrypoint struct {
-	Client    *cl.Client
-	Namespace string
+	client    cli.ClientInterface
+	namespace string
 }
 
 //New is a constructor for entrypoint
-func New(client *cl.Client) (entry *Entrypoint, err error) {
+func New(config *restclient.Config) (entry *Entrypoint, err error) {
 	entry = new(Entrypoint)
-	if entry.Client = client; client == nil {
-		if entry.Client, err = cl.NewInCluster(); err != nil {
-			err = fmt.Errorf("Error while creating k8s client: %s", err)
-			return entry, err
-		}
+	client, err := cli.New(config)
+	if err != nil {
+		return nil, err
 	}
-	if entry.Namespace = os.Getenv("NAMESPACE"); entry.Namespace == "" {
+	entry.client = client
+	if entry.namespace = os.Getenv("NAMESPACE"); entry.namespace == "" {
 		logger.Warning.Print("NAMESPACE env not set, using default")
-		entry.Namespace = "default"
+		entry.namespace = "default"
 	}
 	return entry, err
 }
 
+func (e Entrypoint) Client() (client cli.ClientInterface) {
+	return e.client
+}
+
+func (e Entrypoint) GetNamespace() string {
+	return e.namespace
+}
+
 //Resolve is a main loop whic iterates through all dependencies and resolves them
-func (e *Entrypoint) Resolve() {
+func (e Entrypoint) Resolve() {
 	var wg sync.WaitGroup
 	for _, dep := range dependencies {
 		wg.Add(1)
@@ -65,7 +77,7 @@ func (e *Entrypoint) Resolve() {
 
 //Resolver is an interface which all dependencies should implement
 type Resolver interface {
-	IsResolved(entrypoint *Entrypoint) (bool, error)
+	IsResolved(entrypoint EntrypointInterface) (bool, error)
 	GetName() string
 }
 

@@ -9,7 +9,6 @@ import (
 	command "github.com/stackanetes/kubernetes-entrypoint/util/command"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 	//restclient "k8s.io/kubernetes/pkg/client/restclient"
-	cl "k8s.io/kubernetes/pkg/client/unversioned"
 	//Register resolvers
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/config"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/container"
@@ -20,11 +19,11 @@ import (
 )
 
 func main() {
-	var client *cl.Client
+	//var client cli.ClientInterface
 	var comm []string
 	var entrypoint *entry.Entrypoint
 	var err error
-	if entrypoint, err = entry.New(client); err != nil {
+	if entrypoint, err = entry.New(nil); err != nil {
 		logger.Error.Printf("Creating entrypoint failed: %v", err)
 		os.Exit(1)
 	}
@@ -33,6 +32,7 @@ func main() {
 	if comm = env.SplitEnvToList("COMMAND", " "); len(comm) == 0 {
 		logger.Error.Printf("COMMAND env is empty")
 		os.Exit(1)
+
 	}
 	err = command.Execute(comm)
 	if err != nil {
