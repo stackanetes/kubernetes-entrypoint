@@ -2,7 +2,9 @@ package mocks
 
 import (
 	"fmt"
+
 	"k8s.io/kubernetes/pkg/api"
+	unv "k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/watch"
@@ -17,6 +19,12 @@ func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
 	}
 	ds := new(extensions.DaemonSet)
 	ds.Name = name
+	sel := unv.LabelSelector{
+		MatchLabels: map[string]string{
+			"name": "test",
+		},
+	}
+	ds.Spec.Selector = &sel
 	return ds, nil
 }
 func (d dClient) Create(ds *extensions.DaemonSet) (*extensions.DaemonSet, error) {

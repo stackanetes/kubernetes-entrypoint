@@ -45,7 +45,7 @@ func TestIsResolved(t *testing.T) {
 
 	entry := mocks.NewEntrypoint()
 
-	err := prepareEnv()
+	err = prepareEnv()
 	if err != nil {
 		t.Errorf("Something went wrong: %v", err)
 	}
