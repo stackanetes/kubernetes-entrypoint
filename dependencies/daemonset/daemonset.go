@@ -30,6 +30,7 @@ func NewDaemonset(name string) Daemonset {
 func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	var myPodName string
 	daemonset, err := entrypoint.Client().DaemonSets(entrypoint.GetNamespace()).Get(d.GetName())
+
 	if err != nil {
 		return false, err
 	}
@@ -40,13 +41,16 @@ func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error
 	if err != nil {
 		return false, err
 	}
+
 	if myPodName := os.Getenv("POD_NAME"); myPodName == "" {
 		panic("Environment variable POD_NAME not set")
 	}
+
 	myPod, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).Get(myPodName)
 	if err != nil {
 		panic(fmt.Sprintf("Getting POD: %v failed : %v", myPodName, err))
 	}
+
 	myHost := myPod.Status.HostIP
 
 	for _, pod := range pods.Items {
