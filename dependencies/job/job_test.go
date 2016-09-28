@@ -1,18 +1,27 @@
 package job
 
 import (
-	//entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
-	"fmt"
 	mocks "github.com/stackanetes/kubernetes-entrypoint/mocks"
-	//batch "k8s.io/kubernetes/pkg/apis/batch"
-	//cl "k8s.io/kubernetes/pkg/client/unversioned"
 	"testing"
 )
 
 func TestResolveNewJob(t *testing.T) {
 
-	var entrypoint mocks.MockEntrypoint
-	job := NewJob("test")
+	entrypoint := mocks.NewEntrypoint()
+	job := NewJob("lgtm")
 	status, err := job.IsResolved(entrypoint)
-	fmt.Printf("%v, %v, %v", job, status, err)
+	if status != true {
+		t.Errorf("Resolving job failed: %v", err)
+	}
+}
+
+func TestFailResolveNewJob(t *testing.T) {
+
+	entrypoint := mocks.NewEntrypoint()
+	job := NewJob("fail")
+	_, err := job.IsResolved(entrypoint)
+	expectedError := "Job fail is not completed yet"
+	if err.Error() != expectedError {
+		t.Errorf("Something went wrong: %v", err)
+	}
 }
