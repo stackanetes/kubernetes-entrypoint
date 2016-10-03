@@ -16,14 +16,16 @@ func (e eClient) Get(name string) (*api.Endpoints, error) {
 	if name != "lgtm" {
 		return nil, fmt.Errorf("Mock endpoint didnt work")
 	}
-	endpoint := new(api.Endpoints)
-	endpoint.Name = name
-	addr := api.EndpointAddress{
-		IP: "127.0.0.1",
+	endpoint := &api.Endpoints{
+		ObjectMeta: api.ObjectMeta{Name: name},
+		Subsets: []api.EndpointSubset{
+			api.EndpointSubset{
+				Addresses: []api.EndpointAddress{
+					api.EndpointAddress{IP: "127.0.0.1"},
+				},
+			},
+		},
 	}
-	subset := api.EndpointSubset{}
-	subset.Addresses = append(subset.Addresses, addr)
-	endpoint.Subsets = append(endpoint.Subsets, subset)
 	return endpoint, nil
 }
 func (e eClient) Create(ds *api.Endpoints) (*api.Endpoints, error) {

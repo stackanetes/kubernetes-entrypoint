@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
+	"github.com/stackanetes/kubernetes-entrypoint/logger"
 	"github.com/stackanetes/kubernetes-entrypoint/util"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
@@ -30,39 +31,42 @@ func init() {
 	configEnv := fmt.Sprintf("%sCONFIG", entry.DependencyPrefix)
 	if configDeps := env.SplitEnvToList(configEnv); len(configDeps) > 0 {
 		for _, dep := range configDeps {
-			entry.Register(NewConfig(dep, configmapDirPrefix))
+			config, err := NewConfig(dep, configmapDirPrefix)
+			if err != nil {
+				logger.Error.Printf("Cannot initialize config dep: %v", err)
+			}
+			entry.Register(config)
 		}
 	}
 }
 
-func NewConfig(name string, prefix string) Config {
+func NewConfig(name string, prefix string) (*Config, error) {
 	hostname, err := os.Hostname()
 	if err != nil {
-		panic(fmt.Sprintf("Cannot determine hostname: %v", err))
+		return nil, fmt.Errorf("Cannot determine hostname: %v", err)
 	}
 
 	ip, err := util.GetIp()
 	if err != nil {
-		panic(fmt.Sprintf("Cannot get ip address: %v", err))
+		return nil, fmt.Errorf("Cannot get ip address: %v", err)
 	}
 
-	return Config{
+	return &Config{
 		name: name,
 		params: configParams{
 			IP:        ip,
 			IP_ERLANG: strings.Replace(ip, ".", ",", -1),
 			HOSTNAME:  hostname},
 		prefix: prefix,
-	}
+	}, nil
 }
 
 func (c Config) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
-	var err error
 	//Create directory to ensure it exists
-	if err = createDirectory(c.GetName()); err != nil {
+	if err := createDirectory(c.GetName()); err != nil {
 		return false, fmt.Errorf("Couldn't create directory: %v", err)
 	}
-	if err = createAndTemplateConfig(c.GetName(), c.params, c.prefix); err != nil {
+	if err := createAndTemplateConfig(c.GetName(), c.params, c.prefix); err != nil {
 		return false, fmt.Errorf("Cannot template %s: %v", c.GetName(), err)
 	}
 	return true, nil
@@ -72,10 +76,9 @@ func (c Config) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 func createAndTemplateConfig(name string, params configParams, prefix string) (err error) {
 	config, err := os.Create(name)
 	if err != nil {
-		return
+		return err
 	}
 	file := filepath.Base(name)
-	fmt.Sprintf("SrcConfig: %s", getSrcConfig(prefix, file))
 	temp := template.Must(template.New(file).ParseFiles(getSrcConfig(prefix, file)))
 	if err = temp.Execute(config, params); err != nil {
 		return err
@@ -88,14 +91,9 @@ func (c Config) GetName() string {
 }
 
 func getSrcConfig(prefix string, config string) (srcConfig string) {
-	srcConfig = fmt.Sprintf("%s/%s/%s", prefix, config, config)
-	return
+	return fmt.Sprintf("%s/%s/%s", prefix, config, config)
 }
 
 func createDirectory(file string) error {
-	err := os.MkdirAll(filepath.Dir(file), 0755)
-	if err != nil {
-		return err
-	}
-	return nil
+	return os.MkdirAll(filepath.Dir(file), 0755)
 }

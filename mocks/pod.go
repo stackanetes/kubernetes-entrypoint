@@ -13,16 +13,18 @@ type pClient struct {
 }
 
 func (p pClient) Get(name string) (*api.Pod, error) {
-	pod := new(api.Pod)
-	pod.Name = name
-	pod.Status.ContainerStatuses = []api.ContainerStatus{
-		api.ContainerStatus{
-			Name:  "container_test",
-			Ready: true,
+	return &api.Pod{
+		ObjectMeta: api.ObjectMeta{Name: name},
+		Status: api.PodStatus{
+			ContainerStatuses: []api.ContainerStatus{
+				api.ContainerStatus{
+					Name:  "container_test",
+					Ready: true,
+				},
+			},
+			HostIP: "127.0.0.1",
 		},
-	}
-	pod.Status.HostIP = "127.0.0.1"
-	return pod, nil
+	}, nil
 
 }
 func (p pClient) Create(pod *api.Pod) (*api.Pod, error) {
@@ -33,26 +35,29 @@ func (p pClient) Delete(name string, options *api.DeleteOptions) error {
 	return fmt.Errorf("Not implemented")
 }
 func (p pClient) List(options api.ListOptions) (*api.PodList, error) {
-	pod := new(api.Pod)
-	pod.Name = "podlist"
-	pod.Status.ContainerStatuses = []api.ContainerStatus{
-		api.ContainerStatus{
-			Name:  "container_test",
-			Ready: true,
+	return &api.PodList{
+		Items: []api.Pod{
+			api.Pod{
+				ObjectMeta: api.ObjectMeta{Name: "podList"},
+				Status: api.PodStatus{
+					HostIP: "127.0.01",
+					Conditions: []api.PodCondition{
+						api.PodCondition{
+							Type:   api.PodReady,
+							Status: "True",
+						},
+					},
+					ContainerStatuses: []api.ContainerStatus{
+						api.ContainerStatus{
+							Name:  "container_test",
+							Ready: true,
+						},
+					},
+				},
+			},
 		},
-	}
-	pod.Status.HostIP = "127.0.0.1"
-	pod.Status.Conditions = []api.PodCondition{
-		api.PodCondition{
-			Type:   api.PodReady,
-			Status: "True",
-		},
-	}
-	podList := new(api.PodList)
-	podList.Items = []api.Pod{
-		*pod,
-	}
-	return podList, nil
+	}, nil
+
 }
 
 func (p pClient) Update(pod *api.Pod) (*api.Pod, error) {

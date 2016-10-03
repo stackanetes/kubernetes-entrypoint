@@ -14,14 +14,14 @@ type jClient struct {
 
 func (j jClient) Get(name string) (*batch.Job, error) {
 	if name == "lgtm" {
-		job := new(batch.Job)
-		job.Status.Succeeded = 1
-		return job, nil
+		return &batch.Job{
+			Status: batch.JobStatus{Succeeded: 1},
+		}, nil
 	}
 	if name == "fail" {
-		job := new(batch.Job)
-		job.Status.Succeeded = 0
-		return job, nil
+		return &batch.Job{
+			Status: batch.JobStatus{Succeeded: 0},
+		}, nil
 	}
 	return nil, fmt.Errorf("Mock job didnt work")
 }
