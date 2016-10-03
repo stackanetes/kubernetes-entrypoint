@@ -17,14 +17,14 @@ func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
 	if name != "lgtm" {
 		return nil, fmt.Errorf("Mock daemonset didnt work")
 	}
-	ds := new(extensions.DaemonSet)
-	ds.Name = name
-	sel := unv.LabelSelector{
-		MatchLabels: map[string]string{
-			"name": "test",
+	ds := &extensions.DaemonSet{
+		ObjectMeta: api.ObjectMeta{Name: name},
+		Spec: extensions.DaemonSetSpec{
+			Selector: &unv.LabelSelector{
+				MatchLabels: map[string]string{"name": "test"},
+			},
 		},
 	}
-	ds.Spec.Selector = &sel
 	return ds, nil
 }
 func (d dClient) Create(ds *extensions.DaemonSet) (*extensions.DaemonSet, error) {

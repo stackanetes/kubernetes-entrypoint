@@ -14,16 +14,14 @@ func (m MockEntrypoint) Resolve() {
 }
 
 func (m MockEntrypoint) Client() (client cli.ClientInterface) {
-	client = NewClient()
-	return client
+	return m.client
 }
 func (m MockEntrypoint) GetNamespace() (namespace string) {
 	return m.namespace
 }
 func NewEntrypoint() MockEntrypoint {
-	mockClient := NewClient()
 	return MockEntrypoint{
-		client:    mockClient,
+		client:    NewClient(),
 		namespace: "test",
 	}
 }

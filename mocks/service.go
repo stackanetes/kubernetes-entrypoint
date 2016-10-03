@@ -16,9 +16,9 @@ func (s sClient) Get(name string) (*api.Service, error) {
 	if name != "lgtm" {
 		return nil, fmt.Errorf("Mock service didnt work")
 	}
-	service := new(api.Service)
-	service.Name = name
-	return service, nil
+	return &api.Service{
+		ObjectMeta: api.ObjectMeta{Name: name},
+	}, nil
 }
 func (s sClient) Create(ds *api.Service) (*api.Service, error) {
 	return nil, fmt.Errorf("Not implemented")

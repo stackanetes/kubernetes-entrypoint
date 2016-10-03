@@ -54,8 +54,10 @@ func TestIsResolved(t *testing.T) {
 		t.Errorf("Couldn't create %s template: %v", template, err)
 	}
 
-	config := NewConfig(name, "/tmp/templates")
-
+	config, err := NewConfig(name, "/tmp/templates")
+	if err != nil {
+		t.Errorf("Cannot create config dep: %v", err)
+	}
 	if _, err := config.IsResolved(entry); err != nil {
 		t.Errorf("Something went wrong: %v", err)
 	}
