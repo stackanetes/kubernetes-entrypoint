@@ -78,8 +78,3 @@ please use [readiness probes](http://kubernetes.io/docs/user-guide/production-po
 
 [Stackanetes](http://github/stackanetes/stackanetes) uses kubernetes-entrypoint to manage dependencies when deploying OpenStack on Kubernetes.
 
-
-
-
-
-
