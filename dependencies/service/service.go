@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	entry "github.com/stackanetes/kubernetes-entrypoint/dependencies"
+	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
 
@@ -24,8 +24,8 @@ func NewService(name string) Service {
 
 }
 
-func (s Service) IsResolved(entrypoint *entry.Entrypoint) (bool, error) {
-	e, err := entrypoint.Client.Endpoints(entrypoint.Namespace).Get(s.GetName())
+func (s Service) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
+	e, err := entrypoint.Client().Endpoints(entrypoint.GetNamespace()).Get(s.GetName())
 	if err != nil {
 		return false, err
 	}

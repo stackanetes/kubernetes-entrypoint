@@ -4,7 +4,7 @@ import "testing"
 
 func TestExecuteCommandSuccess(t *testing.T) {
 	successCommand := []string{"echo", "test"}
-	err := ExecuteCommand(successCommand)
+	err := Execute(successCommand)
 	if err != nil {
 		t.Errorf("Expecting: command to success not %v", err)
 	}
@@ -12,7 +12,7 @@ func TestExecuteCommandSuccess(t *testing.T) {
 
 func TestExecuteCommandFail(t *testing.T) {
 	errorCommand := []string{"false"}
-	err := ExecuteCommand(errorCommand)
+	err := Execute(errorCommand)
 	if err == nil {
 		t.Errorf("Expecting command to fail")
 	}

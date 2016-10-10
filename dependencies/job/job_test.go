@@ -1,25 +1,27 @@
 package job
 
 import (
-	"fmt"
-	"os"
+	mocks "github.com/stackanetes/kubernetes-entrypoint/mocks"
 	"testing"
-
-	entry "github.com/stackanetes/docker-entrypoint/dependencies"
-	"github.com/stackanetes/docker-entrypoint/logger"
 )
 
-func init() {
-	os.Setenv(fmt.Sprintf("%sJOBS", entry.DependencyPrefix), "test")
+func TestResolveNewJob(t *testing.T) {
 
-}
-func TestRegisterNewJob(t *testing.T) {
-	logger.Info.Printf("%v", os.Getenv(fmt.Sprintf("%sJOBS", entry.DependencyPrefix)))
-	if len(entry.Dependencies) != 1 {
-		t.Errorf("Expecting len of dependencies to be 1 not %v", len(entry.Dependencies))
+	entrypoint := mocks.NewEntrypoint()
+	job := NewJob("lgtm")
+	status, err := job.IsResolved(entrypoint)
+	if status != true {
+		t.Errorf("Resolving job failed: %v", err)
 	}
+}
 
-	if entry.Dependencies[0].GetName() != "test" {
-		t.Errorf("Expecting name to be test not %s", entry.Dependencies[0].GetName())
+func TestFailResolveNewJob(t *testing.T) {
+
+	entrypoint := mocks.NewEntrypoint()
+	job := NewJob("fail")
+	_, err := job.IsResolved(entrypoint)
+	expectedError := "Job fail is not completed yet"
+	if err.Error() != expectedError {
+		t.Errorf("Something went wrong: %v", err)
 	}
 }
