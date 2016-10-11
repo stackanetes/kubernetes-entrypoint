@@ -22,7 +22,7 @@ Therefore, no centralized orchestration layer is required to manage deployments 
 Kubernetes-entrypoint reads the dependencies out of environment variables passed into a container.
 There is only one required environment variable "COMMAND" which specifies a command(arguments delimited by whitespace) which has to be executed when all dependencies are resolved:
 
-```COMMAND="sleep inf"```
+`COMMAND="sleep inf"`
 
 Kubernetes-entrypoint introduces a wide variety of dependencies which can be used to better orchestrate once deployment.
 
@@ -65,8 +65,8 @@ Example:
 
 `DEPENDENCY_CONFIG=/etc/nova/nova.conf`
 
-The Kubernetes-entrypoint will look for the configuration file `/configmaps/nova.conf/nova.conf`, template `{{ .IP }} and {{ .HOSTNAME }}` tags and save the file as
-`/etc/nova/nova.conf`
+The Kubernetes-entrypoint will look for the configuration file `/configmaps/nova.conf/nova.conf`, template 
+`{{ .IP }} and {{ .HOSTNAME }}` tags and save the file as `/etc/nova/nova.conf`.
 
 ### Socket
 Checks wheter a given file exists and container has rights to read it.
