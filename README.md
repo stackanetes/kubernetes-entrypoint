@@ -20,7 +20,7 @@ Therefore, no centralized orchestration layer is required to manage deployments 
 ## Usage
 
 Kubernetes-entrypoint reads the dependencies out of environment variables passed into a container.
-There is only one required environment variable "COMMAND" which specifies a command(arguments delimited by whitespace) which has to be executed when all dependencies are resolved:
+There is only one required environment variable "COMMAND" which specifies a command (arguments delimited by whitespace) which has to be executed when all dependencies are resolved:
 
 `COMMAND="sleep inf"`
 
@@ -28,8 +28,7 @@ Kubernetes-entrypoint introduces a wide variety of dependencies which can be use
 
 ## Supported types of dependencies
 
-All dependencies are passed as environement variables in format of `DEPENDENCY_<NAME>` delimited by colon. For dependencies to be effective
-please use [readiness probes](http://kubernetes.io/docs/user-guide/production-pods/#liveness-and-readiness-probes-aka-health-checks) for all containers.
+All dependencies are passed as environement variables in format of `DEPENDENCY_<NAME>` delimited by colon. For dependencies to be effective please use [readiness probes](http://kubernetes.io/docs/user-guide/production-pods/#liveness-and-readiness-probes-aka-health-checks) for all containers.
 
 ### Service
 Checks whether given kubernetes service has at least one endpoint.  
@@ -69,7 +68,7 @@ The Kubernetes-entrypoint will look for the configuration file `/configmaps/nova
 `{{ .IP }} and {{ .HOSTNAME }}` tags and save the file as `/etc/nova/nova.conf`.
 
 ### Socket
-Checks wheter a given file exists and container has rights to read it.
+Checks whether a given file exists and container has rights to read it.
 Example:
 
 `DEPENDENCY_SOCKET=/var/run/openvswitch/ovs.socket`
