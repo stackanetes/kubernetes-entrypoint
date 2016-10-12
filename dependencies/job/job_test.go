@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	entry "github.com/stackanetes/docker-entrypoint/dependencies"
-	"github.com/stackanetes/docker-entrypoint/logger"
+	entry "github.com/stackanetes/kubernetes-entrypoint/dependencies"
+	"github.com/stackanetes/kubernetes-entrypoint/logger"
 )
 
 func init() {
