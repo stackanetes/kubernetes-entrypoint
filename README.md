@@ -5,4 +5,75 @@
 [![Go Report Card](https://goreportcard.com/badge/stackanetes/kubernetes-entrypoint "Go Report Card")](https://goreportcard.com/report/stackanetes/kubernetes-entrypoint)
 
 
+============
+
+Kubernetes-entrypoint enables complex deployments on top of Kubernetes.
+
+## Overview
+
+Kubernetes-entrypoint is meant to be used as a container entrypoint, which means it has to bundled in the container. 
+Before launching the desired application, the entrypoint verifies and waits for all specified dependencies to be met.
+
+The Kubernetes-entrypoint queries directly the Kubernetes API and each container is self-aware of its dependencies and their states. 
+Therefore, no centralized orchestration layer is required to manage deployments and scenarios such as failure recovery or pod migration become easy.
+
+## Usage
+
+Kubernetes-entrypoint reads the dependencies out of environment variables passed into a container.
+There is only one required environment variable "COMMAND" which specifies a command (arguments delimited by whitespace) which has to be executed when all dependencies are resolved:
+
+`COMMAND="sleep inf"`
+
+Kubernetes-entrypoint introduces a wide variety of dependencies which can be used to better orchestrate once deployment.
+
+## Supported types of dependencies
+
+All dependencies are passed as environement variables in format of `DEPENDENCY_<NAME>` delimited by colon. For dependencies to be effective please use [readiness probes](http://kubernetes.io/docs/user-guide/production-pods/#liveness-and-readiness-probes-aka-health-checks) for all containers.
+
+### Service
+Checks whether given kubernetes service has at least one endpoint.  
+Example:
+
+`DEPENDENCY_SERVICE=mariadb,keystone-api`
+
+### Container
+Within a pod composed of multiple containers, it waits for the containers specified by their names to start.
+This dependency requires a `POD_NAME` environement variable which can be easily passed through the [downward api](http://kubernetes.io/docs/user-guide/downward-api/).
+Example:
+
+`DEPENDENCY_CONTAINER=nova-libvirt,virtlogd`
+
+### Daemonset
+Checks if a specified daemonset is already running on the same host, this dependency requires a `POD_NAME`
+env which can be easily passed through the [downward api](http://kubernetes.io/docs/user-guide/downward-api/).
+Example:
+
+`DEPENDENCY_DAEMONSET=openvswitch-agent`
+
+### Job
+Checks if a given job succeded at least once.
+Example:
+
+`DEPENDENCY_JOBS=nova-init,neutron-init`
+
+### Config
+This dependency performs a container level templating of configuration files. It can template an ip address `{{ .IP }}` and hostname `{{ .HOSTNAME }}`. 
+Templated config has to be stored in an arbitrary directory `/configmaps/<name_of_file>/<name_of_file>`.
+This dependency requires `INTERFACE_NAME` environment variable to know which interface to use for obtain ip address. 
+Example:
+
+`DEPENDENCY_CONFIG=/etc/nova/nova.conf`
+
+The Kubernetes-entrypoint will look for the configuration file `/configmaps/nova.conf/nova.conf`, template 
+`{{ .IP }} and {{ .HOSTNAME }}` tags and save the file as `/etc/nova/nova.conf`.
+
+### Socket
+Checks whether a given file exists and container has rights to read it.
+Example:
+
+`DEPENDENCY_SOCKET=/var/run/openvswitch/ovs.socket`
+
+## Examples
+
+[Stackanetes](http://github/stackanetes/stackanetes) uses kubernetes-entrypoint to manage dependencies when deploying OpenStack on Kubernetes.
 
