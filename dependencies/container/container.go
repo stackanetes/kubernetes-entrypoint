@@ -25,12 +25,12 @@ func NewContainer(name string) Container {
 
 }
 
-func (c Container) IsResolved(entrypoint *entry.Entrypoint) (bool, error) {
+func (c Container) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	myPodName := os.Getenv("POD_NAME")
 	if myPodName == "" {
 		return false, fmt.Errorf("Environment variable POD_NAME not set")
 	}
-	pod, err := entrypoint.Client.Pods(entrypoint.Namespace).Get(myPodName)
+	pod, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).Get(myPodName)
 	if err != nil {
 		return false, err
 	}

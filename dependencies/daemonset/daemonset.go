@@ -28,14 +28,14 @@ func NewDaemonSet(name string) Daemonset {
 	return Daemonset{name: name}
 }
 
-func (d Daemonset) IsResolved(entrypoint *entry.Entrypoint) (bool, error) {
-	daemonset, err := entrypoint.Client.ExtensionsClient.DaemonSets(entrypoint.Namespace).Get(d.name)
+func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
+	daemonset, err := entrypoint.Client().DaemonSets(entrypoint.GetNamespace()).Get(d.GetName())
 	if err != nil {
 		return false, err
 	}
 	label := labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels)
 	opts := api.ListOptions{LabelSelector: label}
-	pods, err := entrypoint.Client.Pods(entrypoint.Namespace).List(opts)
+	pods, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).List(opts)
 	if err != nil {
 		return false, err
 	}
@@ -45,7 +45,7 @@ func (d Daemonset) IsResolved(entrypoint *entry.Entrypoint) (bool, error) {
 		os.Exit(1)
 
 	}
-	myPod, err := entrypoint.Client.Pods(entrypoint.Namespace).Get(myPodName)
+	myPod, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).Get(myPodName)
 	if err != nil {
 		logger.Error.Printf("Getting POD: %v failed : %v", myPodName, err)
 		os.Exit(1)

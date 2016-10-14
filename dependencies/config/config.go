@@ -55,7 +55,7 @@ func NewConfig(name string) Config {
 	}
 }
 
-func (c Config) IsResolved(entrypoint *entry.Entrypoint) (bool, error) {
+func (c Config) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	//Create directory to ensure it exists
 	err := createDirectory(c.GetName())
 	if err != nil {

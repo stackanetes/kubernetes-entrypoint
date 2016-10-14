@@ -1,17 +1,25 @@
 package entrypoint
 
-import "testing"
+import (
+	"testing"
+)
 
 type dummyResolver struct {
+	name      string
+	namespace string
 }
 
-func (d *dummyResolver) IsResolved(name string) (bool, error) {
+func (d dummyResolver) IsResolved(entry EntrypointInterface) (bool, error) {
 	return true, nil
 }
+func (d dummyResolver) GetName() (name string) {
+	return d.name
+}
+
 func TestRegisterNewDependency(t *testing.T) {
-	dummy := new(dummyResolver)
+	dummy := dummyResolver{name: "dummy"}
 	Register(dummy)
-	if len(Dependencies) != 1 {
-		t.Errorf("Expecting dependencies len to be 1 got %v", len(Dependencies))
+	if len(dependencies) != 1 {
+		t.Errorf("Expecting dependencies len to be 1 got %v", len(dependencies))
 	}
 }
