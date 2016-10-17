@@ -75,5 +75,5 @@ Example:
 
 ## Examples
 
-[Stackanetes](http://github/stackanetes/stackanetes) uses kubernetes-entrypoint to manage dependencies when deploying OpenStack on Kubernetes.
+[Stackanetes](http://github.com/stackanetes/stackanetes) uses kubernetes-entrypoint to manage dependencies when deploying OpenStack on Kubernetes.
 
