@@ -3,50 +3,60 @@ package mocks
 import (
 	"fmt"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/unversioned"
-	"k8s.io/kubernetes/pkg/watch"
+	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
+	api "k8s.io/client-go/pkg/api"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/pkg/watch"
+	"k8s.io/client-go/rest"
 )
 
 type sClient struct {
 }
 
-func (s sClient) Get(name string) (*api.Service, error) {
+func (s sClient) Get(name string) (*v1.Service, error) {
 	if name != "lgtm" {
 		return nil, fmt.Errorf("Mock service didnt work")
 	}
-	return &api.Service{
-		ObjectMeta: api.ObjectMeta{Name: name},
+	return &v1.Service{
+		ObjectMeta: v1.ObjectMeta{Name: name},
 	}, nil
 }
-func (s sClient) Create(ds *api.Service) (*api.Service, error) {
+func (s sClient) Create(ds *v1.Service) (*v1.Service, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (s sClient) Delete(name string) error {
+func (s sClient) Delete(name string, options *v1.DeleteOptions) error {
 	return fmt.Errorf("Not implemented")
 }
-func (s sClient) List(options api.ListOptions) (*api.ServiceList, error) {
+
+func (s sClient) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+	return fmt.Errorf("Not implemented")
+}
+
+func (s sClient) List(options v1.ListOptions) (*v1.ServiceList, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (s sClient) Update(ds *api.Service) (*api.Service, error) {
+func (s sClient) Update(ds *v1.Service) (*v1.Service, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (s sClient) UpdateStatus(ds *api.Service) (*api.Service, error) {
+func (s sClient) UpdateStatus(ds *v1.Service) (*v1.Service, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (s sClient) Watch(options api.ListOptions) (watch.Interface, error) {
+func (s sClient) Watch(options v1.ListOptions) (watch.Interface, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (s sClient) ProxyGet(scheme string, name string, port string, path string, params map[string]string) restclient.ResponseWrapper {
+func (s sClient) ProxyGet(scheme string, name string, port string, path string, params map[string]string) rest.ResponseWrapper {
 	return nil
 }
 
-func NewSClient() unversioned.ServiceInterface {
+func (s sClient) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Service, err error) {
+	return nil, fmt.Errorf("Not implemented")
+}
+
+func NewSClient() v1core.ServiceInterface {
 	return sClient{}
 }

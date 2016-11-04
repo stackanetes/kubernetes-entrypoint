@@ -3,7 +3,7 @@ package entrypoint
 import (
 	cli "github.com/stackanetes/kubernetes-entrypoint/client"
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
-	restclient "k8s.io/kubernetes/pkg/client/restclient"
+	"k8s.io/client-go/rest"
 	"os"
 	"sync"
 	"time"
@@ -29,7 +29,7 @@ type Entrypoint struct {
 }
 
 //New is a constructor for entrypoint
-func New(config *restclient.Config) (entry *Entrypoint, err error) {
+func New(config *rest.Config) (entry *Entrypoint, err error) {
 	entry = new(Entrypoint)
 	client, err := cli.New(config)
 	if err != nil {
