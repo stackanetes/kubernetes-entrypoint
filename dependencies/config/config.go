@@ -2,94 +2,98 @@ package config
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
 
-	entry "github.com/stackanetes/kubernetes-entrypoint/dependencies"
+	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
+	"github.com/stackanetes/kubernetes-entrypoint/util"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
 
+const configmapDirPrefix = "/configmaps"
+
+type configParams struct {
+	HOSTNAME  string
+	IP        string
+	IP_ERLANG string
+}
+
 type Config struct {
 	name   string
-	params struct {
-		iface     string
-		HOSTNAME  string
-		IP        string
-		IP_ERLANG string
-	}
+	params configParams
+	prefix string
 }
 
 func init() {
 	configEnv := fmt.Sprintf("%sCONFIG", entry.DependencyPrefix)
 	if configDeps := env.SplitEnvToList(configEnv); len(configDeps) > 0 {
 		for _, dep := range configDeps {
-			entry.Register(NewConfig(dep))
+			config, err := NewConfig(dep, configmapDirPrefix)
+			if err != nil {
+				logger.Error.Printf("Cannot initialize config dep: %v", err)
+			}
+			entry.Register(config)
 		}
 	}
 }
 
-func NewConfig(name string) Config {
-	var config Config
-	config.name = name
-	iface := os.Getenv("INTERFACE_NAME")
-	if iface == "" {
-		logger.Error.Print("Environment variable INTERFACE_NAME not set")
-		os.Exit(1)
-	}
+func NewConfig(name string, prefix string) (*Config, error) {
 	hostname, err := os.Hostname()
 	if err != nil {
-		logger.Error.Print("Environment variable HOSTNAME not set")
+		return nil, fmt.Errorf("Cannot determine hostname: %v", err)
 	}
-	config.params.HOSTNAME = hostname
-	config.params.iface = iface
-	i, err := net.InterfaceByName(iface)
+
+	ip, err := util.GetIp()
 	if err != nil {
-		logger.Error.Printf("Cannot get iface: %v", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("Cannot get ip address: %v", err)
 	}
 
-	address, err := i.Addrs()
-	if err != nil || len(address) == 0 {
-		logger.Error.Printf("Cannot get ip: %v", err)
-		os.Exit(1)
-	}
-	config.params.IP = strings.Split(address[0].String(), "/")[0]
-	config.params.IP_ERLANG = strings.Replace(config.params.IP, ".", ",", -1)
-
-	return config
+	return &Config{
+		name: name,
+		params: configParams{
+			IP:        ip,
+			IP_ERLANG: strings.Replace(ip, ".", ",", -1),
+			HOSTNAME:  hostname},
+		prefix: prefix,
+	}, nil
 }
 
-func (c Config) IsResolved(entrypoint *entry.Entrypoint) (bool, error) {
-	logger.Info.Print(c.GetName())
-	err := CreateDirectory(c.GetName())
-	if err != nil {
+func (c Config) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
+	//Create directory to ensure it exists
+	if err := createDirectory(c.GetName()); err != nil {
 		return false, fmt.Errorf("Couldn't create directory: %v", err)
 	}
-	config, err := os.Create(c.GetName())
-	if err != nil {
-		return false, fmt.Errorf("Couldn't touch file %v: %v", c.GetName(), err)
-	}
-	file := filepath.Base(c.GetName())
-	temp := template.Must(template.New(file).ParseFiles(fmt.Sprintf("/configmaps/%s/%s", file, file)))
-	if err = temp.Execute(config, c.params); err != nil {
-		return false, err
+	if err := createAndTemplateConfig(c.GetName(), c.params, c.prefix); err != nil {
+		return false, fmt.Errorf("Cannot template %s: %v", c.GetName(), err)
 	}
 	return true, nil
 
 }
 
+func createAndTemplateConfig(name string, params configParams, prefix string) (err error) {
+	config, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	file := filepath.Base(name)
+	temp := template.Must(template.New(file).ParseFiles(getSrcConfig(prefix, file)))
+	if err = temp.Execute(config, params); err != nil {
+		return err
+	}
+
+	return
+}
 func (c Config) GetName() string {
 	return c.name
 }
 
-func CreateDirectory(file string) error {
-	err := os.MkdirAll(filepath.Dir(file), 0644)
-	if err != nil {
-		return err
-	}
-	return nil
+func getSrcConfig(prefix string, config string) (srcConfig string) {
+	return fmt.Sprintf("%s/%s/%s", prefix, config, config)
+}
+
+func createDirectory(file string) error {
+	return os.MkdirAll(filepath.Dir(file), 0755)
 }

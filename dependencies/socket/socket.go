@@ -2,7 +2,7 @@ package socket
 
 import (
 	"fmt"
-	entry "github.com/stackanetes/kubernetes-entrypoint/dependencies"
+	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 	"os"
 )
@@ -28,7 +28,7 @@ func (s Socket) GetName() string {
 	return s.name
 }
 
-func (s Socket) IsResolved(entrypoint *entry.Entrypoint) (bool, error) {
+func (s Socket) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	_, err := os.Stat(s.GetName())
 	if err == nil {
 		return true, nil
