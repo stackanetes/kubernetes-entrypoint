@@ -30,8 +30,10 @@ func main() {
 	entrypoint.Resolve()
 
 	if comm = env.SplitEnvToList("COMMAND", " "); len(comm) == 0 {
-		logger.Error.Printf("COMMAND env is empty")
-		os.Exit(1)
+		// TODO(DTadrzak): we should consider other options to handle whether pod
+		// is an init-container
+		logger.Warning.Printf("COMMAND env is empty")
+		os.Exit(0)
 
 	}
 	if err = command.Execute(comm); err != nil {
