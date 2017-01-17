@@ -31,7 +31,7 @@ Kubernetes-entrypoint introduces a wide variety of dependencies which can be use
 All dependencies are passed as environement variables in format of `DEPENDENCY_<NAME>` delimited by colon. For dependencies to be effective please use [readiness probes](http://kubernetes.io/docs/user-guide/production-pods/#liveness-and-readiness-probes-aka-health-checks) for all containers.
 
 ### Service
-Checks whether given kubernetes service has at least one endpoint.  
+Checks whether given kubernetes service has at least one endpoint.
 Example:
 
 `DEPENDENCY_SERVICE=mariadb,keystone-api`
@@ -46,8 +46,10 @@ Example:
 ### Daemonset
 Checks if a specified daemonset is already running on the same host, this dependency requires a `POD_NAME`
 env which can be easily passed through the [downward api](http://kubernetes.io/docs/user-guide/downward-api/).
+The `POD_NAME` variable is mandatory and is used to resolve dependencies.
 Example:
 
+Simple example how to use downward API to get `POD_NAME`, can be found [here](https://raw.githubusercontent.com/kubernetes/kubernetes.github.io/master/docs/user-guide/downward-api/dapi-pod.yaml).
 `DEPENDENCY_DAEMONSET=openvswitch-agent`
 
 ### Job
@@ -73,7 +75,12 @@ Example:
 
 `DEPENDENCY_SOCKET=/var/run/openvswitch/ovs.socket`
 
+## Image
+
+Build process for image is trigged after each commit.
+Can be found [here](https://quay.io/repository/stackanetes/kubernetes-entrypoint?tab=tags), and can be pulled by executing:
+`docker pull quay.io/stackanetes/kubernetes-entrypoint:v0.1.0`
+
 ## Examples
 
 [Stackanetes](http://github.com/stackanetes/stackanetes) uses kubernetes-entrypoint to manage dependencies when deploying OpenStack on Kubernetes.
-
