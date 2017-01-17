@@ -16,6 +16,12 @@ const (
 	interval         = 2
 )
 
+//Resolver is an interface which all dependencies should implement
+type Resolver interface {
+	IsResolved(entrypoint EntrypointInterface) (bool, error)
+	GetName() string
+}
+
 type EntrypointInterface interface {
 	Resolve()
 	Client() cli.ClientInterface
@@ -26,6 +32,14 @@ type EntrypointInterface interface {
 type Entrypoint struct {
 	client    cli.ClientInterface
 	namespace string
+}
+
+//Register is a function which registers new dependencies
+func Register(res Resolver) {
+	if res == nil {
+		panic("Entrypoint: could not register nil Resolver")
+	}
+	dependencies = append(dependencies, res)
 }
 
 //New is a constructor for entrypoint
@@ -73,18 +87,4 @@ func (e Entrypoint) Resolve() {
 	}
 	wg.Wait()
 
-}
-
-//Resolver is an interface which all dependencies should implement
-type Resolver interface {
-	IsResolved(entrypoint EntrypointInterface) (bool, error)
-	GetName() string
-}
-
-//Register is a function which registers new dependencies
-func Register(res Resolver) {
-	if res == nil {
-		panic("Entrypoint: could not register nil Resolver")
-	}
-	dependencies = append(dependencies, res)
 }

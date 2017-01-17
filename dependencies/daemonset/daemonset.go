@@ -23,6 +23,7 @@ func init() {
 			daemonset, err := NewDaemonset(dep)
 			if err != nil {
 				logger.Error.Printf("Cannot initialize daemonset: %v", err)
+				continue
 			}
 			entry.Register(daemonset)
 		}
@@ -31,7 +32,7 @@ func init() {
 
 func NewDaemonset(name string) (*Daemonset, error) {
 	if os.Getenv("POD_NAME") == "" {
-		return nil, fmt.Errorf("Env POD_NAME not set")
+		return nil, fmt.Errorf("Env POD_NAME not set. Daemonset dependency %s will be ignored!", name)
 	}
 	return &Daemonset{
 		name:    name,
