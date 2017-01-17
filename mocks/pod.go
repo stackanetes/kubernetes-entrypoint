@@ -18,7 +18,7 @@ func (p pClient) Get(name string) (*v1.Pod, error) {
 		ObjectMeta: v1.ObjectMeta{Name: name},
 		Status: v1.PodStatus{
 			ContainerStatuses: []v1.ContainerStatus{
-				v1.ContainerStatus{
+				{
 					Name:  "container_test",
 					Ready: true,
 				},
@@ -43,18 +43,18 @@ func (p pClient) DeleteCollection(options *v1.DeleteOptions, listOptions v1.List
 func (p pClient) List(options v1.ListOptions) (*v1.PodList, error) {
 	return &v1.PodList{
 		Items: []v1.Pod{
-			v1.Pod{
+			{
 				ObjectMeta: v1.ObjectMeta{Name: "podList"},
 				Status: v1.PodStatus{
 					HostIP: "127.0.01",
 					Conditions: []v1.PodCondition{
-						v1.PodCondition{
+						{
 							Type:   v1.PodReady,
 							Status: "True",
 						},
 					},
 					ContainerStatuses: []v1.ContainerStatus{
-						v1.ContainerStatus{
+						{
 							Name:  "container_test",
 							Ready: true,
 						},

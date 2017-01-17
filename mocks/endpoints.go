@@ -19,9 +19,9 @@ func (e eClient) Get(name string) (*v1.Endpoints, error) {
 	endpoint := &v1.Endpoints{
 		ObjectMeta: v1.ObjectMeta{Name: name},
 		Subsets: []v1.EndpointSubset{
-			v1.EndpointSubset{
+			{
 				Addresses: []v1.EndpointAddress{
-					v1.EndpointAddress{IP: "127.0.0.1"},
+					{IP: "127.0.0.1"},
 				},
 			},
 		},
