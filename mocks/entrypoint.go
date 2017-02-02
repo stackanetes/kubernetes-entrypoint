@@ -22,7 +22,7 @@ func (m MockEntrypoint) GetNamespace() (namespace string) {
 
 func NewEntrypointInNamespace(namespace string) MockEntrypoint {
 	return MockEntrypoint{
-		client:    client,
+		client:    NewClient(),
 		namespace: namespace,
 	}
 }
