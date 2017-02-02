@@ -20,9 +20,13 @@ func (m MockEntrypoint) GetNamespace() (namespace string) {
 	return m.namespace
 }
 
-func NewEntrypoint(client cli.ClientInterface, namespace string) MockEntrypoint {
+func NewEntrypointInNamespace(namespace string) MockEntrypoint {
 	return MockEntrypoint{
 		client:    client,
 		namespace: namespace,
 	}
+}
+
+func NewEntrypoint() MockEntrypoint {
+	return NewEntrypointInNamespace("test")
 }
