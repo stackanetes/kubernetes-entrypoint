@@ -1,7 +1,6 @@
 package mocks
 
 import (
-	//	"github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	cli "github.com/stackanetes/kubernetes-entrypoint/client"
 )
 
@@ -16,12 +15,18 @@ func (m MockEntrypoint) Resolve() {
 func (m MockEntrypoint) Client() (client cli.ClientInterface) {
 	return m.client
 }
+
 func (m MockEntrypoint) GetNamespace() (namespace string) {
 	return m.namespace
 }
-func NewEntrypoint() MockEntrypoint {
+
+func NewEntrypointInNamespace(namespace string) MockEntrypoint {
 	return MockEntrypoint{
 		client:    NewClient(),
-		namespace: "test",
+		namespace: namespace,
 	}
+}
+
+func NewEntrypoint() MockEntrypoint {
+	return NewEntrypointInNamespace("test")
 }

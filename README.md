@@ -49,8 +49,9 @@ env which can be easily passed through the [downward api](http://kubernetes.io/d
 The `POD_NAME` variable is mandatory and is used to resolve dependencies.
 Example:
 
-Simple example how to use downward API to get `POD_NAME`, can be found [here](https://raw.githubusercontent.com/kubernetes/kubernetes.github.io/master/docs/user-guide/downward-api/dapi-pod.yaml).
 `DEPENDENCY_DAEMONSET=openvswitch-agent`
+
+Simple example how to use downward API to get `POD_NAME` can be found [here](https://raw.githubusercontent.com/kubernetes/kubernetes.github.io/master/docs/user-guide/downward-api/dapi-pod.yaml).
 
 ### Job
 Checks if a given job succeded at least once.
@@ -78,7 +79,7 @@ Example:
 ## Image
 
 Build process for image is trigged after each commit.
-Can be found [here](https://quay.io/repository/stackanetes/kubernetes-entrypoint?tab=tags), and can be pulled by executing:
+Can be found [here](https://quay.io/repository/stackanetes/kubernetes-entrypoint?tab=tags), and pulled by executing:
 `docker pull quay.io/stackanetes/kubernetes-entrypoint:v0.1.0`
 
 ## Examples

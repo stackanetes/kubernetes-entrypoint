@@ -1,19 +1,20 @@
 package entrypoint
 
 import (
-	cli "github.com/stackanetes/kubernetes-entrypoint/client"
-	"github.com/stackanetes/kubernetes-entrypoint/logger"
-	"k8s.io/client-go/rest"
 	"os"
 	"sync"
 	"time"
+
+	cli "github.com/stackanetes/kubernetes-entrypoint/client"
+	"github.com/stackanetes/kubernetes-entrypoint/logger"
+	"k8s.io/client-go/rest"
 )
 
 var dependencies []Resolver // List containing all dependencies to be resolved
 const (
 	//DependencyPrefix is a prefix for env variables
-	DependencyPrefix = "DEPENDENCY_"
-	interval         = 2
+	DependencyPrefix      = "DEPENDENCY_"
+	resolverSleepInterval = 2
 )
 
 //Resolver is an interface which all dependencies should implement
@@ -79,7 +80,7 @@ func (e Entrypoint) Resolve() {
 				if status, err = dep.IsResolved(e); err != nil {
 					logger.Warning.Printf("Resolving dependency for %v failed: %v", dep.GetName(), err)
 				}
-				time.Sleep(interval * time.Second)
+				time.Sleep(resolverSleepInterval * time.Second)
 			}
 			logger.Info.Printf("Dependency %v is resolved", dep.GetName())
 

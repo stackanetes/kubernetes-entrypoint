@@ -799,6 +799,16 @@
 			"ImportPath": "k8s.io/client-go/transport",
 			"Comment": "v2.0.0-alpha.0",
 			"Rev": "b22087a53becae45931ed72d5e0f12e0031d771a"
+		},
+		{
+			"ImportPath": "github.com/onsi/gomega",
+			"Comment": "v1.2.0",
+			"Rev": "e85f63af4302dc0e4277c6008ecf803f1d80e4f0"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo",
+			"Comment": "v1.2.0",
+			"Rev": "bb93381d543b0e5725244abe752214a110791d01"
 		}
 	]
 }
