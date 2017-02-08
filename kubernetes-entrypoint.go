@@ -5,21 +5,18 @@ import (
 
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 
-	"github.com/stackanetes/kubernetes-entrypoint/logger"
-	command "github.com/stackanetes/kubernetes-entrypoint/util/command"
-	"github.com/stackanetes/kubernetes-entrypoint/util/env"
-	//restclient "k8s.io/kubernetes/pkg/client/restclient"
-	//Register resolvers
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/config"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/container"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/daemonset"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/job"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/service"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/socket"
+	"github.com/stackanetes/kubernetes-entrypoint/logger"
+	command "github.com/stackanetes/kubernetes-entrypoint/util/command"
+	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
 
 func main() {
-	//var client cli.ClientInterface
 	var comm []string
 	var entrypoint *entry.Entrypoint
 	var err error
