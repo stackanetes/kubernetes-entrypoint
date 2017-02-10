@@ -3,11 +3,10 @@ package mocks
 import (
 	"fmt"
 
-	v1batch "k8s.io/client-go/kubernetes/typed/batch/v1"
-	api "k8s.io/client-go/pkg/api"
-	v1 "k8s.io/client-go/pkg/api/v1"
-	batch "k8s.io/client-go/pkg/apis/batch/v1"
-	"k8s.io/client-go/pkg/watch"
+	v1batch "k8s.io/client-go/1.5/kubernetes/typed/batch/v1"
+	api "k8s.io/client-go/1.5/pkg/api"
+	batch "k8s.io/client-go/1.5/pkg/apis/batch/v1"
+	"k8s.io/client-go/1.5/pkg/watch"
 )
 
 type jClient struct {
@@ -30,13 +29,13 @@ func (j jClient) Create(job *batch.Job) (*batch.Job, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (j jClient) Delete(name string, opts *v1.DeleteOptions) error {
+func (j jClient) Delete(name string, opts *api.DeleteOptions) error {
 	return fmt.Errorf("Not implemented")
 }
-func (j jClient) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (j jClient) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
 	return fmt.Errorf("Not implemented")
 }
-func (j jClient) List(options v1.ListOptions) (*batch.JobList, error) {
+func (j jClient) List(options api.ListOptions) (*batch.JobList, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
@@ -48,7 +47,7 @@ func (j jClient) UpdateStatus(job *batch.Job) (*batch.Job, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (j jClient) Watch(options v1.ListOptions) (watch.Interface, error) {
+func (j jClient) Watch(options api.ListOptions) (watch.Interface, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 

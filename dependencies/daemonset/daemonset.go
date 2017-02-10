@@ -7,8 +7,9 @@ import (
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/labels"
+	api "k8s.io/client-go/1.5/pkg/api"
+	"k8s.io/client-go/1.5/pkg/api/v1"
+	"k8s.io/client-go/1.5/pkg/labels"
 )
 
 type Daemonset struct {
@@ -49,7 +50,7 @@ func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error
 	}
 
 	label := labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels)
-	opts := v1.ListOptions{LabelSelector: label.String()}
+	opts := api.ListOptions{LabelSelector: label}
 	pods, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).List(opts)
 	if err != nil {
 		return false, err

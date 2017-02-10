@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
@@ -29,9 +30,13 @@ func (s Service) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) 
 	if err != nil {
 		return false, err
 	}
-	if len(e.Subsets) > 0 {
-		return true, nil
+
+	for _, subset := range e.Subsets {
+		if len(subset.Addresses) > 0 {
+			return true, nil
+		}
 	}
+
 	return false, fmt.Errorf("Service %v has no endpoints", s.GetName())
 }
 
