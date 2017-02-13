@@ -3,11 +3,11 @@ package mocks
 import (
 	"fmt"
 
-	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
-	api "k8s.io/client-go/pkg/api"
-	v1 "k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/watch"
-	"k8s.io/client-go/rest"
+	apicore "k8s.io/client-go/1.5/kubernetes/typed/core/v1"
+	api "k8s.io/client-go/1.5/pkg/api"
+	"k8s.io/client-go/1.5/pkg/api/v1"
+	"k8s.io/client-go/1.5/pkg/watch"
+	"k8s.io/client-go/1.5/rest"
 )
 
 type eClient struct {
@@ -45,15 +45,15 @@ func (e eClient) Create(ds *v1.Endpoints) (*v1.Endpoints, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (e eClient) Delete(name string, options *v1.DeleteOptions) error {
+func (e eClient) Delete(name string, options *api.DeleteOptions) error {
 	return fmt.Errorf("Not implemented")
 }
 
-func (e eClient) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (e eClient) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
 	return fmt.Errorf("Not implemented")
 }
 
-func (e eClient) List(options v1.ListOptions) (*v1.EndpointsList, error) {
+func (e eClient) List(options api.ListOptions) (*v1.EndpointsList, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
@@ -61,11 +61,11 @@ func (e eClient) Update(ds *v1.Endpoints) (*v1.Endpoints, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (s eClient) UpdateStatus(ds *v1.Endpoints) (*v1.Endpoints, error) {
+func (s eClient) UpdateStatus(ds *api.Endpoints) (*api.Endpoints, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (e eClient) Watch(options v1.ListOptions) (watch.Interface, error) {
+func (e eClient) Watch(options api.ListOptions) (watch.Interface, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
@@ -77,6 +77,6 @@ func (e eClient) Patch(name string, pt api.PatchType, data []byte, subresources 
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func NewEClient() v1core.EndpointsInterface {
+func NewEClient() apicore.EndpointsInterface {
 	return eClient{}
 }

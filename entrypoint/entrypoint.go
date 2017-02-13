@@ -7,7 +7,7 @@ import (
 
 	cli "github.com/stackanetes/kubernetes-entrypoint/client"
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
-	"k8s.io/client-go/rest"
+	"k8s.io/client-go/1.5/rest"
 )
 
 var dependencies []Resolver // List containing all dependencies to be resolved
