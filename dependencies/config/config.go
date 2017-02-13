@@ -66,26 +66,27 @@ func (c Config) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	if err := createDirectory(c.GetName()); err != nil {
 		return false, fmt.Errorf("Couldn't create directory: %v", err)
 	}
-	if err := createAndTemplateConfig(c.GetName(), c.params, c.prefix); err != nil {
+	if err := c.createAndTemplateConfig(); err != nil {
 		return false, fmt.Errorf("Cannot template %s: %v", c.GetName(), err)
 	}
 	return true, nil
 
 }
 
-func createAndTemplateConfig(name string, params configParams, prefix string) (err error) {
-	config, err := os.Create(name)
+func (c Config) createAndTemplateConfig() (err error) {
+	config, err := os.Create(c.name)
 	if err != nil {
 		return err
 	}
-	file := filepath.Base(name)
-	temp := template.Must(template.New(file).ParseFiles(getSrcConfig(prefix, file)))
-	if err = temp.Execute(config, params); err != nil {
+	file := filepath.Base(c.name)
+
+	temp := template.Must(template.New(file).ParseFiles(getSrcConfig(c.prefix, file)))
+	if err = temp.Execute(config, c.params); err != nil {
 		return err
 	}
-
 	return
 }
+
 func (c Config) GetName() string {
 	return c.name
 }

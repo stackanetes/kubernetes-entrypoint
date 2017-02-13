@@ -11,6 +11,11 @@ import (
 	"k8s.io/client-go/pkg/labels"
 )
 
+const (
+	PodNameEnvVar            = "POD_NAME"
+	PodNameNotSetErrorFormat = "Env POD_NAME not set. Daemonset dependency %s will be ignored!"
+)
+
 type Daemonset struct {
 	name    string
 	podName string
@@ -31,12 +36,12 @@ func init() {
 }
 
 func NewDaemonset(name string) (*Daemonset, error) {
-	if os.Getenv("POD_NAME") == "" {
-		return nil, fmt.Errorf("Env POD_NAME not set. Daemonset dependency %s will be ignored!", name)
+	if os.Getenv(PodNameEnvVar) == "" {
+		return nil, fmt.Errorf(PodNameNotSetErrorFormat, name)
 	}
 	return &Daemonset{
 		name:    name,
-		podName: os.Getenv("POD_NAME"),
+		podName: os.Getenv(PodNameEnvVar),
 	}, nil
 }
 
@@ -57,7 +62,7 @@ func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error
 
 	myPod, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).Get(d.podName)
 	if err != nil {
-		panic(fmt.Sprintf("Getting POD: %v failed : %v", myPodName, err))
+		return false, fmt.Errorf("Getting POD: %v failed : %v", myPodName, err)
 	}
 
 	myHost := myPod.Status.HostIP

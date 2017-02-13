@@ -13,20 +13,32 @@ import (
 type eClient struct {
 }
 
+const (
+	MockEndpointError = "Mock endpoint didnt work"
+)
+
 func (e eClient) Get(name string) (*v1.Endpoints, error) {
-	if name != "lgtm" {
-		return nil, fmt.Errorf("Mock endpoint didnt work")
+	if name == FailingServiceName {
+		return nil, fmt.Errorf(MockEndpointError)
 	}
-	endpoint := &v1.Endpoints{
-		ObjectMeta: v1.ObjectMeta{Name: name},
-		Subsets: []v1.EndpointSubset{
+
+	subsets := []v1.EndpointSubset{}
+
+	if name != EmptySubsetsServiceName {
+		subsets = []v1.EndpointSubset{
 			{
 				Addresses: []v1.EndpointAddress{
 					{IP: "127.0.0.1"},
 				},
 			},
-		},
+		}
 	}
+
+	endpoint := &v1.Endpoints{
+		ObjectMeta: v1.ObjectMeta{Name: name},
+		Subsets:    subsets,
+	}
+
 	return endpoint, nil
 }
 func (e eClient) Create(ds *v1.Endpoints) (*v1.Endpoints, error) {

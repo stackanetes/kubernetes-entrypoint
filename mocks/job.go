@@ -10,16 +10,21 @@ import (
 	"k8s.io/client-go/pkg/watch"
 )
 
+const (
+	SucceedingJobName = "succeed"
+	FailingJobName    = "fail"
+)
+
 type jClient struct {
 }
 
 func (j jClient) Get(name string) (*batch.Job, error) {
-	if name == "lgtm" {
+	if name == SucceedingJobName {
 		return &batch.Job{
 			Status: batch.JobStatus{Succeeded: 1},
 		}, nil
 	}
-	if name == "fail" {
+	if name == FailingJobName {
 		return &batch.Job{
 			Status: batch.JobStatus{Succeeded: 0},
 		}, nil

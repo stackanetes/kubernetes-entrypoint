@@ -2,10 +2,13 @@ package container
 
 import (
 	"fmt"
+	"os"
+
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
-	"os"
 )
+
+const PodNameNotSetError = "Environment variable POD_NAME not set"
 
 type Container struct {
 	name string
@@ -28,7 +31,7 @@ func NewContainer(name string) Container {
 func (c Container) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	myPodName := os.Getenv("POD_NAME")
 	if myPodName == "" {
-		return false, fmt.Errorf("Environment variable POD_NAME not set")
+		return false, fmt.Errorf(PodNameNotSetError)
 	}
 	pod, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).Get(myPodName)
 	if err != nil {

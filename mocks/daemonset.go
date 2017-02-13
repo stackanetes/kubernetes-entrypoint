@@ -14,18 +14,34 @@ import (
 type dClient struct {
 }
 
+const (
+	SucceedingDaemonsetName = "DAEMONSET_SUCCEED"
+	FailingDaemonsetName    = "DAEMONSET_FAIL"
+
+	IncorrectMatchLabelsDaemonsetName = "DAEMONSET_INCORRECT_MATCH_LABELS"
+	NotReadyMatchLabelsDaemonsetName  = "DAEMONSET_NOT_READY_MATCH_LABELS"
+)
+
 func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
-	if name != "lgtm" {
+	matchLabelName := MockContainerName
+
+	if name == FailingDaemonsetName {
 		return nil, fmt.Errorf("Mock daemonset didnt work")
+	} else if name == IncorrectMatchLabelsDaemonsetName {
+		matchLabelName = IncorrectMatchLabel
+	} else if name == NotReadyMatchLabelsDaemonsetName {
+		matchLabelName = NotReadyMatchLabel
 	}
+
 	ds := &extensions.DaemonSet{
 		ObjectMeta: v1.ObjectMeta{Name: name},
 		Spec: extensions.DaemonSetSpec{
 			Selector: &unversioned.LabelSelector{
-				MatchLabels: map[string]string{"name": "test"},
+				MatchLabels: map[string]string{"name": matchLabelName},
 			},
 		},
 	}
+
 	return ds, nil
 }
 func (d dClient) Create(ds *extensions.DaemonSet) (*extensions.DaemonSet, error) {

@@ -2,9 +2,12 @@ package service
 
 import (
 	"fmt"
+
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
+
+const FailingStatusFormat = "Service %v has no endpoints"
 
 type Service struct {
 	name string
@@ -32,7 +35,7 @@ func (s Service) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) 
 	if len(e.Subsets) > 0 {
 		return true, nil
 	}
-	return false, fmt.Errorf("Service %v has no endpoints", s.GetName())
+	return false, fmt.Errorf(FailingStatusFormat, s.GetName())
 }
 
 func (s Service) GetName() string {

@@ -13,9 +13,16 @@ import (
 type sClient struct {
 }
 
+const (
+	MockServiceError        = "Mock service didnt work"
+	SucceedingServiceName   = "succeed"
+	EmptySubsetsServiceName = "empty-subsets"
+	FailingServiceName      = "fail"
+)
+
 func (s sClient) Get(name string) (*v1.Service, error) {
-	if name != "lgtm" {
-		return nil, fmt.Errorf("Mock service didnt work")
+	if name == FailingServiceName {
+		return nil, fmt.Errorf(MockServiceError)
 	}
 	return &v1.Service{
 		ObjectMeta: v1.ObjectMeta{Name: name},

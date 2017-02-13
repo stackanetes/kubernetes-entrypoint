@@ -1,27 +1,47 @@
-package job
+package job_test
 
 import (
-	mocks "github.com/stackanetes/kubernetes-entrypoint/mocks"
-	"testing"
+	"fmt"
+
+	. "github.com/stackanetes/kubernetes-entrypoint/dependencies/job"
+	"github.com/stackanetes/kubernetes-entrypoint/entrypoint"
+	"github.com/stackanetes/kubernetes-entrypoint/mocks"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestResolveNewJob(t *testing.T) {
+const testJobName = "TEST_JOB"
 
-	entrypoint := mocks.NewEntrypoint()
-	job := NewJob("lgtm")
-	status, err := job.IsResolved(entrypoint)
-	if status != true {
-		t.Errorf("Resolving job failed: %v", err)
-	}
-}
+var testEntrypoint entrypoint.EntrypointInterface
 
-func TestFailResolveNewJob(t *testing.T) {
+var _ = Describe("Job", func() {
 
-	entrypoint := mocks.NewEntrypoint()
-	job := NewJob("fail")
-	_, err := job.IsResolved(entrypoint)
-	expectedError := "Job fail is not completed yet"
-	if err.Error() != expectedError {
-		t.Errorf("Something went wrong: %v", err)
-	}
-}
+	BeforeEach(func() {
+		testEntrypoint = mocks.NewEntrypoint()
+	})
+
+	It("checks the name of a newly created job", func() {
+		job := NewJob(testJobName)
+
+		Expect(job.GetName()).To(Equal(testJobName))
+	})
+
+	It("checks resolution of a succeeding job", func() {
+		job := NewJob(mocks.SucceedingJobName)
+
+		isResolved, err := job.IsResolved(testEntrypoint)
+
+		Expect(isResolved).To(Equal(true))
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("checks resolution failure of a failing job", func() {
+		job := NewJob(mocks.FailingJobName)
+
+		isResolved, err := job.IsResolved(testEntrypoint)
+
+		Expect(isResolved).To(Equal(false))
+		Expect(err.Error()).To(Equal(fmt.Sprintf(FailingStatusFormat, job.GetName())))
+	})
+})

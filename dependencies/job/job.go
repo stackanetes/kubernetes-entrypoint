@@ -7,6 +7,8 @@ import (
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
 
+const FailingStatusFormat = "Job %v is not completed yet"
+
 type Job struct {
 	name string
 }
@@ -31,7 +33,7 @@ func (j Job) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 		return false, err
 	}
 	if job.Status.Succeeded == 0 {
-		return false, fmt.Errorf("Job %v is not completed yet", j.GetName())
+		return false, fmt.Errorf(FailingStatusFormat, j.GetName())
 	}
 	return true, nil
 }

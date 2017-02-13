@@ -2,9 +2,15 @@ package socket
 
 import (
 	"fmt"
+	"os"
+
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
-	"os"
+)
+
+const (
+	NonExistingErrorFormat = "Socket %v doesn't exists"
+	NoPermsErrorFormat     = "I have no permission to %v"
 )
 
 type Socket struct {
@@ -34,10 +40,10 @@ func (s Socket) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 		return true, nil
 	}
 	if os.IsNotExist(err) {
-		return false, fmt.Errorf("Socket %v doesn't exists", s.GetName())
+		return false, fmt.Errorf(NonExistingErrorFormat, s.GetName())
 	}
 	if os.IsPermission(err) {
-		return false, fmt.Errorf("I have no permission to %v", s.GetName())
+		return false, fmt.Errorf(NoPermsErrorFormat, s.GetName())
 	}
 	return false, err
 }
