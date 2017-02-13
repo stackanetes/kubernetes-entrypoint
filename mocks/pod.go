@@ -3,12 +3,12 @@ package mocks
 import (
 	"fmt"
 
-	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
-	api "k8s.io/client-go/pkg/api"
-	v1 "k8s.io/client-go/pkg/api/v1"
-	policy "k8s.io/client-go/pkg/apis/policy/v1alpha1"
-	"k8s.io/client-go/pkg/watch"
-	"k8s.io/client-go/rest"
+	v1core "k8s.io/client-go/1.5/kubernetes/typed/core/v1"
+	api "k8s.io/client-go/1.5/pkg/api"
+	v1 "k8s.io/client-go/1.5/pkg/api/v1"
+	policy "k8s.io/client-go/1.5/pkg/apis/policy/v1alpha1"
+	"k8s.io/client-go/1.5/pkg/watch"
+	"k8s.io/client-go/1.5/rest"
 )
 
 type pClient struct {
@@ -33,15 +33,15 @@ func (p pClient) Create(pod *v1.Pod) (*v1.Pod, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (p pClient) Delete(name string, options *v1.DeleteOptions) error {
+func (p pClient) Delete(name string, options *api.DeleteOptions) error {
 	return fmt.Errorf("Not implemented")
 }
 
-func (p pClient) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (p pClient) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
 	return fmt.Errorf("Not implemented")
 }
 
-func (p pClient) List(options v1.ListOptions) (*v1.PodList, error) {
+func (p pClient) List(options api.ListOptions) (*v1.PodList, error) {
 	return &v1.PodList{
 		Items: []v1.Pod{
 			{
@@ -75,7 +75,7 @@ func (p pClient) UpdateStatus(pod *v1.Pod) (*v1.Pod, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (p pClient) Watch(options v1.ListOptions) (watch.Interface, error) {
+func (p pClient) Watch(options api.ListOptions) (watch.Interface, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
