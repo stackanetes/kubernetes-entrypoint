@@ -2,9 +2,11 @@ package socket
 
 import (
 	"fmt"
-	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
-	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 	"os"
+
+	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
+	"github.com/stackanetes/kubernetes-entrypoint/logger"
+	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
 
 type Socket struct {
@@ -14,6 +16,7 @@ type Socket struct {
 func init() {
 	socketEnv := fmt.Sprintf("%sSOCKET", entry.DependencyPrefix)
 	if socketDeps := env.SplitEnvToList(socketEnv); len(socketDeps) > 0 {
+		logger.Info.Printf("%sSOCKET is deprecated and will be removed in next release", entry.DependencyPrefix)
 		for _, dep := range socketDeps {
 			entry.Register(NewSocket(dep))
 		}
