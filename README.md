@@ -70,11 +70,11 @@ Example:
 The Kubernetes-entrypoint will look for the configuration file `/configmaps/nova.conf/nova.conf`, template 
 `{{ .IP }} and {{ .HOSTNAME }}` tags and save the file as `/etc/nova/nova.conf`.
 
-### Socket
+### File
 Checks whether a given file exists and container has rights to read it.
 Example:
 
-`DEPENDENCY_SOCKET=/var/run/openvswitch/ovs.socket`
+`DEPENDENCY_FILE=/var/run/openvswitch/ovs.socket`
 
 ## Image
 
