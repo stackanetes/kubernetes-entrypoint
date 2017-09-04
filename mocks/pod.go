@@ -11,16 +11,31 @@ import (
 	"k8s.io/client-go/1.5/rest"
 )
 
+const MockContainerName = "TEST_CONTAINER"
+
 type pClient struct {
 }
 
+const (
+	PodNotPresent             = "NOT_PRESENT"
+	PodEmptyContainerStatuses = "EMPTY_CONTAINTER_STATUSES"
+	PodEnvVariableValue       = "podlist"
+
+	IncorrectMatchLabel = "INCORRECT"
+	NotReadyMatchLabel  = "INCORRECT"
+)
+
 func (p pClient) Get(name string) (*v1.Pod, error) {
+	if name == PodNotPresent {
+		return nil, fmt.Errorf("Could not get pod with the name %s", name)
+	}
+
 	return &v1.Pod{
 		ObjectMeta: v1.ObjectMeta{Name: name},
 		Status: v1.PodStatus{
 			ContainerStatuses: []v1.ContainerStatus{
 				{
-					Name:  "container_test",
+					Name:  MockContainerName,
 					Ready: true,
 				},
 			},
@@ -42,10 +57,20 @@ func (p pClient) DeleteCollection(options *api.DeleteOptions, listOptions api.Li
 }
 
 func (p pClient) List(options api.ListOptions) (*v1.PodList, error) {
+	if options.LabelSelector.String() == "name=INCORRECT" {
+		return nil, fmt.Errorf("Client received incorrect pod label names")
+	}
+
+	readyStatus := true
+
+	if options.LabelSelector.String() == "name=NOT_READY" {
+		readyStatus = false
+	}
+
 	return &v1.PodList{
 		Items: []v1.Pod{
 			{
-				ObjectMeta: v1.ObjectMeta{Name: "podList"},
+				ObjectMeta: v1.ObjectMeta{Name: PodEnvVariableValue},
 				Status: v1.PodStatus{
 					HostIP: "127.0.01",
 					Conditions: []v1.PodCondition{
@@ -56,15 +81,14 @@ func (p pClient) List(options api.ListOptions) (*v1.PodList, error) {
 					},
 					ContainerStatuses: []v1.ContainerStatus{
 						{
-							Name:  "container_test",
-							Ready: true,
+							Name:  MockContainerName,
+							Ready: readyStatus,
 						},
 					},
 				},
 			},
 		},
 	}, nil
-
 }
 
 func (p pClient) Update(pod *v1.Pod) (*v1.Pod, error) {

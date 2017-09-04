@@ -37,7 +37,6 @@ func (d dummyResolver) GetName() (name string) {
 func init() {
 	testClient = mocks.NewClient()
 	testEntrypoint = mocks.NewEntrypointInNamespace(testNamespace)
-
 }
 
 func registerNilResolver() {
