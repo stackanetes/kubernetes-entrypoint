@@ -1,4 +1,4 @@
-package config_test
+package config
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	. "github.com/stackanetes/kubernetes-entrypoint/dependencies/config"
 	"github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/mocks"
 
@@ -22,7 +21,6 @@ const (
 
 	testConfigContentsFormat = "TEST_CONFIG %s\n"
 
-	// configPath       = "/tmp/lgtm"
 	templatePrefix = "/tmp/templates"
 )
 
@@ -111,9 +109,11 @@ var _ = Describe("Config", func() {
 	})
 
 	It("checks the name of a newly created config file", func() {
-		config, _ := NewConfig(testConfigPath, templatePrefix)
+		config, err := NewConfig(testConfigPath, templatePrefix)
+		Expect(config.name).To(Equal(testConfigPath))
 
-		Expect(config.GetName()).To(Equal(testConfigPath))
+		Expect(config).NotTo(Equal(nil))
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("checks the format of a newly created config file", func() {
@@ -137,5 +137,4 @@ var _ = Describe("Config", func() {
 		Expect(isResolved).To(Equal(true))
 		Expect(err).NotTo(HaveOccurred())
 	})
-
 })

@@ -4,11 +4,18 @@ import (
 	"fmt"
 	"os"
 
+	"strings"
+
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
+	"github.com/stackanetes/kubernetes-entrypoint/logger"
+	"github.com/stackanetes/kubernetes-entrypoint/util"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
 
-const PodNameNotSetError = "Environment variable POD_NAME not set"
+const (
+	PodNameNotSetError    = "Environment variable POD_NAME not set"
+	NamespaceNotSupported = "Container doesn't accept namespace"
+)
 
 type Container struct {
 	name string
@@ -16,9 +23,16 @@ type Container struct {
 
 func init() {
 	containerEnv := fmt.Sprintf("%sCONTAINER", entry.DependencyPrefix)
-	if containerDeps := env.SplitEnvToList(containerEnv); len(containerDeps) > 0 {
-		for _, dep := range containerDeps {
-			entry.Register(NewContainer(dep))
+	if util.ContainsSeparator(containerEnv, "Container") {
+		logger.Error.Printf(NamespaceNotSupported)
+		os.Exit(1)
+	}
+	if containerDeps := env.SplitEnvToDeps(containerEnv); containerDeps != nil {
+
+		if len(containerDeps) > 0 {
+			for _, dep := range containerDeps {
+				entry.Register(NewContainer(dep.Name))
+			}
 		}
 	}
 }
@@ -33,19 +47,23 @@ func (c Container) IsResolved(entrypoint entry.EntrypointInterface) (bool, error
 	if myPodName == "" {
 		return false, fmt.Errorf(PodNameNotSetError)
 	}
-	pod, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).Get(myPodName)
+	pod, err := entrypoint.Client().Pods(env.GetBaseNamespace()).Get(myPodName)
 	if err != nil {
 		return false, err
 	}
+
+	if strings.Contains(c.name, env.Separator) {
+		return false, fmt.Errorf("Specifing namespace is not permitted")
+	}
 	containers := pod.Status.ContainerStatuses
 	for _, container := range containers {
-		if container.Name == c.GetName() && container.Ready {
+		if container.Name == c.name && container.Ready {
 			return true, nil
 		}
 	}
 	return false, nil
 }
 
-func (c Container) GetName() string {
-	return c.name
+func (c Container) String() string {
+	return fmt.Sprintf("Container %s", c.name)
 }

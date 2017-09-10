@@ -17,12 +17,15 @@ type pClient struct {
 }
 
 const (
-	PodNotPresent             = "NOT_PRESENT"
-	PodEmptyContainerStatuses = "EMPTY_CONTAINTER_STATUSES"
-	PodEnvVariableValue       = "podlist"
+	PodNotPresent       = "NOT_PRESENT"
+	PodEnvVariableValue = "podlist"
 
 	IncorrectMatchLabel = "INCORRECT"
 	NotReadyMatchLabel  = "INCORRECT"
+
+	CorrectDaemonsetNamespace   = "CORRECT_DAEMONSET_NAMESPACE"
+	IncorrectDaemonsetNamespace = "INCORRECT_DAEMONSET_NAMESPACE"
+	CorrectDaemonset            = "CORRECT_DAEMONSET"
 )
 
 func (p pClient) Get(name string) (*v1.Pod, error) {

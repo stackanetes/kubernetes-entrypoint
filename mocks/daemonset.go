@@ -41,6 +41,12 @@ func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
 		},
 	}
 
+	if name == CorrectDaemonsetNamespace {
+		ds.ObjectMeta.Namespace = CorrectDaemonset
+	} else if name == IncorrectDaemonsetNamespace {
+		return nil, fmt.Errorf("Mock daemonset didnt work")
+	}
+
 	return ds, nil
 }
 func (d dClient) Create(ds *extensions.DaemonSet) (*extensions.DaemonSet, error) {

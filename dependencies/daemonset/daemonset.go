@@ -14,19 +14,20 @@ import (
 
 const (
 	PodNameEnvVar            = "POD_NAME"
-	PodNameNotSetErrorFormat = "Env POD_NAME not set. Daemonset dependency %s will be ignored!"
+	PodNameNotSetErrorFormat = "Env POD_NAME not set. Daemonset dependency %s in namespace %s will be ignored!"
 )
 
 type Daemonset struct {
-	name    string
-	podName string
+	name      string
+	namespace string
+	podName   string
 }
 
 func init() {
 	daemonsetEnv := fmt.Sprintf("%sDAEMONSET", entry.DependencyPrefix)
-	if daemonsetsDeps := env.SplitEnvToList(daemonsetEnv); daemonsetsDeps != nil {
+	if daemonsetsDeps := env.SplitEnvToDeps(daemonsetEnv); daemonsetsDeps != nil {
 		for _, dep := range daemonsetsDeps {
-			daemonset, err := NewDaemonset(dep)
+			daemonset, err := NewDaemonset(dep.Name, dep.Namespace)
 			if err != nil {
 				logger.Error.Printf("Cannot initialize daemonset: %v", err)
 				continue
@@ -36,19 +37,20 @@ func init() {
 	}
 }
 
-func NewDaemonset(name string) (*Daemonset, error) {
+func NewDaemonset(name string, namespace string) (*Daemonset, error) {
 	if os.Getenv(PodNameEnvVar) == "" {
-		return nil, fmt.Errorf(PodNameNotSetErrorFormat, name)
+		return nil, fmt.Errorf(PodNameNotSetErrorFormat, name, namespace)
 	}
 	return &Daemonset{
-		name:    name,
-		podName: os.Getenv(PodNameEnvVar),
+		name:      name,
+		namespace: namespace,
+		podName:   os.Getenv(PodNameEnvVar),
 	}, nil
 }
 
 func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	var myPodName string
-	daemonset, err := entrypoint.Client().DaemonSets(entrypoint.GetNamespace()).Get(d.GetName())
+	daemonset, err := entrypoint.Client().DaemonSets(d.namespace).Get(d.name)
 
 	if err != nil {
 		return false, err
@@ -56,12 +58,12 @@ func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error
 
 	label := labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels)
 	opts := api.ListOptions{LabelSelector: label}
-	pods, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).List(opts)
+	pods, err := entrypoint.Client().Pods(d.namespace).List(opts)
 	if err != nil {
 		return false, err
 	}
 
-	myPod, err := entrypoint.Client().Pods(entrypoint.GetNamespace()).Get(d.podName)
+	myPod, err := entrypoint.Client().Pods(d.namespace).Get(d.podName)
 	if err != nil {
 		return false, fmt.Errorf("Getting POD: %v failed : %v", myPodName, err)
 	}
@@ -75,14 +77,10 @@ func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error
 		if isPodReady(pod) {
 			return true, nil
 		}
-		return false, fmt.Errorf("Pod %v of daemonset %v is not ready", pod.Name, d.GetName())
+		return false, fmt.Errorf("Pod %v of daemonset %s is not ready", pod.Name, d)
 
 	}
 	return true, nil
-}
-
-func (d Daemonset) GetName() string {
-	return d.name
 }
 
 func isPodOnHost(pod *v1.Pod, hostIP string) bool {
@@ -99,4 +97,8 @@ func isPodReady(pod v1.Pod) bool {
 		}
 	}
 	return false
+}
+
+func (d Daemonset) String() string {
+	return fmt.Sprintf("Daemonset %s in namespace %s", d.name, d.namespace)
 }
