@@ -14,11 +14,16 @@ type dClient struct {
 }
 
 const (
-	SucceedingDaemonsetName = "DAEMONSET_SUCCEED"
-	FailingDaemonsetName    = "DAEMONSET_FAIL"
+	SucceedingDaemonsetName         = "DAEMONSET_SUCCEED"
+	FailingDaemonsetName            = "DAEMONSET_FAIL"
+	CorrectNamespaceDaemonsetName   = "CORRECT_DAEMONSET_NAMESPACE"
+	IncorrectNamespaceDaemonsetName = "INCORRECT_DAEMONSET_NAMESPACE"
+	CorrectDaemonsetNamespace       = "CORRECT_DAEMONSET"
 
 	IncorrectMatchLabelsDaemonsetName = "DAEMONSET_INCORRECT_MATCH_LABELS"
 	NotReadyMatchLabelsDaemonsetName  = "DAEMONSET_NOT_READY_MATCH_LABELS"
+	IncorrectMatchLabel               = "INCORRECT"
+	NotReadyMatchLabel                = "INCORRECT"
 )
 
 func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
@@ -41,9 +46,9 @@ func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
 		},
 	}
 
-	if name == CorrectDaemonsetNamespace {
-		ds.ObjectMeta.Namespace = CorrectDaemonset
-	} else if name == IncorrectDaemonsetNamespace {
+	if name == CorrectNamespaceDaemonsetName {
+		ds.ObjectMeta.Namespace = CorrectDaemonsetNamespace
+	} else if name == IncorrectNamespaceDaemonsetName {
 		return nil, fmt.Errorf("Mock daemonset didnt work")
 	}
 

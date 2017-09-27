@@ -28,7 +28,7 @@ Kubernetes-entrypoint introduces a wide variety of dependencies which can be use
 
 ## Latest features
 
-Extending functionality of kubernetes-entrypoint by adding an ability to specify dependencies in different namespaces. The new format for writing dependencies is `namespace:name`. To ensure backward compatibility if the dependency name is without colon, it behaves just like in previous versions so it esumes that dependecies is running at the same namespace as kubernetes-entrypoint. This feature is not implemented for container, config and socket dependency because in such cases the different namespace is irrelevant.
+Extending functionality of kubernetes-entrypoint by adding an ability to specify dependencies in different namespaces. The new format for writing dependencies is `namespace:name`. To ensure backward compatibility if the dependency name is without colon, it behaves just like in previous versions so it assumes that dependecies are running at the same namespace as kubernetes-entrypoint. This feature is not implemented for container, config and socket dependency because in such cases the different namespace is irrelevant.
 
 For instance:
 `

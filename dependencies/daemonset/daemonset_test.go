@@ -13,7 +13,7 @@ import (
 
 const (
 	podEnvVariableValue = "podlist"
-	daemonsetNamespace  = "namespace1"
+	daemonsetNamespace  = "test"
 )
 
 var testEntrypoint entrypoint.EntrypointInterface
@@ -37,7 +37,7 @@ var _ = Describe("Daemonset", func() {
 
 	It(fmt.Sprintf("creates new daemonset with %s set and checks its name", PodNameEnvVar), func() {
 		daemonset, err := NewDaemonset(mocks.SucceedingDaemonsetName, daemonsetNamespace)
-		Expect(daemonset).NotTo(Equal(nil))
+		Expect(daemonset).NotTo(BeNil())
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(daemonset.name).To(Equal(mocks.SucceedingDaemonsetName))
@@ -48,7 +48,7 @@ var _ = Describe("Daemonset", func() {
 
 		isResolved, err := daemonset.IsResolved(testEntrypoint)
 
-		Expect(isResolved).To(Equal(true))
+		Expect(isResolved).To(BeTrue())
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -57,7 +57,7 @@ var _ = Describe("Daemonset", func() {
 
 		isResolved, err := daemonset.IsResolved(testEntrypoint)
 
-		Expect(isResolved).To(Equal(false))
+		Expect(isResolved).To(BeFalse())
 		Expect(err).To(HaveOccurred())
 	})
 
@@ -66,7 +66,7 @@ var _ = Describe("Daemonset", func() {
 
 		isResolved, err := daemonset.IsResolved(testEntrypoint)
 
-		Expect(isResolved).To(Equal(false))
+		Expect(isResolved).To(BeFalse())
 		Expect(err).To(HaveOccurred())
 	})
 
@@ -77,7 +77,7 @@ var _ = Describe("Daemonset", func() {
 
 		isResolved, err := daemonset.IsResolved(testEntrypoint)
 
-		Expect(isResolved).To(Equal(false))
+		Expect(isResolved).To(BeFalse())
 		Expect(err).To(HaveOccurred())
 	})
 
@@ -86,32 +86,46 @@ var _ = Describe("Daemonset", func() {
 
 		isResolved, err := daemonset.IsResolved(testEntrypoint)
 
-		Expect(isResolved).To(Equal(false))
+		Expect(isResolved).To(BeFalse())
 		Expect(err).To(HaveOccurred())
 	})
 
 	It("checks resolution of a correct daemonset namespace", func() {
-		daemonset, err := NewDaemonset(mocks.CorrectDaemonsetNamespace, daemonsetNamespace)
+		daemonset, err := NewDaemonset(mocks.CorrectNamespaceDaemonsetName, daemonsetNamespace)
 
-		Expect(daemonset).NotTo(Equal(nil))
+		Expect(daemonset).NotTo(BeNil())
 		Expect(err).NotTo(HaveOccurred())
 
 		isResolved, err := daemonset.IsResolved(testEntrypoint)
 
-		Expect(isResolved).To(Equal(true))
+		Expect(isResolved).To(BeTrue())
 		Expect(err).NotTo(HaveOccurred())
 
 	})
 
 	It("checks resolution of an incorrect daemonset namespace", func() {
-		daemonset, err := NewDaemonset(mocks.IncorrectDaemonsetNamespace, daemonsetNamespace)
+		daemonset, err := NewDaemonset(mocks.IncorrectNamespaceDaemonsetName, daemonsetNamespace)
 
-		Expect(daemonset).NotTo(Equal(nil))
+		Expect(daemonset).NotTo(BeNil())
 		Expect(err).NotTo(HaveOccurred())
 
 		isResolved, err := daemonset.IsResolved(testEntrypoint)
 
-		Expect(isResolved).To(Equal(false))
+		Expect(isResolved).To(BeFalse())
 		Expect(err).To(HaveOccurred())
+	})
+
+	It("resolve daemonset and entrypoint pod in different namespaces", func() {
+		daemonset, err := NewDaemonset(mocks.CorrectNamespaceDaemonsetName, mocks.CorrectDaemonsetNamespace)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = os.Setenv(PodNameEnvVar, "shouldwork")
+		Expect(err).NotTo(HaveOccurred())
+
+		isResolved, err := daemonset.IsResolved(testEntrypoint)
+
+		Expect(err).NotTo(HaveOccurred())
+		Expect(isResolved).To(BeTrue())
+		err = os.Unsetenv(PodNameEnvVar)
 	})
 })

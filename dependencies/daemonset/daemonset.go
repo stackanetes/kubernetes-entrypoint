@@ -58,19 +58,20 @@ func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error
 
 	label := labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels)
 	opts := api.ListOptions{LabelSelector: label}
-	pods, err := entrypoint.Client().Pods(d.namespace).List(opts)
+
+	daemonsetPods, err := entrypoint.Client().Pods(d.namespace).List(opts)
 	if err != nil {
 		return false, err
 	}
 
-	myPod, err := entrypoint.Client().Pods(d.namespace).Get(d.podName)
+	myPod, err := entrypoint.Client().Pods(env.GetBaseNamespace()).Get(d.podName)
 	if err != nil {
 		return false, fmt.Errorf("Getting POD: %v failed : %v", myPodName, err)
 	}
 
 	myHost := myPod.Status.HostIP
 
-	for _, pod := range pods.Items {
+	for _, pod := range daemonsetPods.Items {
 		if !isPodOnHost(&pod, myHost) {
 			continue
 		}
