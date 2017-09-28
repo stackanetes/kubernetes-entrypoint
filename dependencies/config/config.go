@@ -13,7 +13,10 @@ import (
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
 
-const configmapDirPrefix = "/configmaps"
+const (
+	configmapDirPrefix    = "/configmaps"
+	NamespaceNotSupported = "Config doesn't accept namespace"
+)
 
 type configParams struct {
 	HOSTNAME  string
@@ -29,9 +32,13 @@ type Config struct {
 
 func init() {
 	configEnv := fmt.Sprintf("%sCONFIG", entry.DependencyPrefix)
-	if configDeps := env.SplitEnvToList(configEnv); len(configDeps) > 0 {
+	if util.ContainsSeparator(configEnv, "Config") {
+		logger.Error.Printf(NamespaceNotSupported)
+		os.Exit(1)
+	}
+	if configDeps := env.SplitEnvToDeps(configEnv); len(configDeps) > 0 {
 		for _, dep := range configDeps {
-			config, err := NewConfig(dep, configmapDirPrefix)
+			config, err := NewConfig(dep.Name, configmapDirPrefix)
 			if err != nil {
 				logger.Error.Printf("Cannot initialize config dep: %v", err)
 			}
@@ -63,11 +70,11 @@ func NewConfig(name string, prefix string) (*Config, error) {
 
 func (c Config) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	//Create directory to ensure it exists
-	if err := createDirectory(c.GetName()); err != nil {
+	if err := createDirectory(c.name); err != nil {
 		return false, fmt.Errorf("Couldn't create directory: %v", err)
 	}
 	if err := c.createAndTemplateConfig(); err != nil {
-		return false, fmt.Errorf("Cannot template %s: %v", c.GetName(), err)
+		return false, fmt.Errorf("Cannot template %s: %v", c.name, err)
 	}
 	return true, nil
 
@@ -87,14 +94,14 @@ func (c Config) createAndTemplateConfig() (err error) {
 	return
 }
 
-func (c Config) GetName() string {
-	return c.name
-}
-
 func getSrcConfig(prefix string, config string) (srcConfig string) {
 	return fmt.Sprintf("%s/%s/%s", prefix, config, config)
 }
 
 func createDirectory(file string) error {
 	return os.MkdirAll(filepath.Dir(file), 0755)
+}
+
+func (c Config) String() string {
+	return fmt.Sprintf("Config %s", c.name)
 }

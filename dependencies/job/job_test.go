@@ -1,9 +1,8 @@
-package job_test
+package job
 
 import (
 	"fmt"
 
-	. "github.com/stackanetes/kubernetes-entrypoint/dependencies/job"
 	"github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/mocks"
 
@@ -11,7 +10,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-const testJobName = "TEST_JOB"
+const testJobName = "TEST_JOB_NAME"
+const testJobNamespace = "TEST_JOB_NAMESPACE"
 
 var testEntrypoint entrypoint.EntrypointInterface
 
@@ -22,13 +22,14 @@ var _ = Describe("Job", func() {
 	})
 
 	It("checks the name of a newly created job", func() {
-		job := NewJob(testJobName)
+		job := NewJob(testJobName, testJobNamespace)
 
-		Expect(job.GetName()).To(Equal(testJobName))
+		Expect(job.name).To(Equal(testJobName))
+		Expect(job.namespace).To(Equal(testJobNamespace))
 	})
 
 	It("checks resolution of a succeeding job", func() {
-		job := NewJob(mocks.SucceedingJobName)
+		job := NewJob(mocks.SucceedingJobName, mocks.SucceedingJobName)
 
 		isResolved, err := job.IsResolved(testEntrypoint)
 
@@ -37,11 +38,12 @@ var _ = Describe("Job", func() {
 	})
 
 	It("checks resolution failure of a failing job", func() {
-		job := NewJob(mocks.FailingJobName)
+		job := NewJob(mocks.FailingJobName, mocks.FailingJobName)
 
 		isResolved, err := job.IsResolved(testEntrypoint)
 
 		Expect(isResolved).To(Equal(false))
-		Expect(err.Error()).To(Equal(fmt.Sprintf(FailingStatusFormat, job.GetName())))
+		Expect(err.Error()).To(Equal(fmt.Sprintf(FailingStatusFormat, job)))
+		Expect(err.Error()).To(Equal(fmt.Sprintf(FailingStatusFormat, job)))
 	})
 })

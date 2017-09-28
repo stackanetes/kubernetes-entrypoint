@@ -26,6 +26,17 @@ There is only one required environment variable "COMMAND" which specifies a comm
 
 Kubernetes-entrypoint introduces a wide variety of dependencies which can be used to better orchestrate once deployment.
 
+## Latest features
+
+Extending functionality of kubernetes-entrypoint by adding an ability to specify dependencies in different namespaces. The new format for writing dependencies is `namespace:name`. To ensure backward compatibility if the dependency name is without colon, it behaves just like in previous versions so it assumes that dependecies are running at the same namespace as kubernetes-entrypoint. This feature is not implemented for container, config and socket dependency because in such cases the different namespace is irrelevant.
+
+For instance:
+`
+DEPENDENCY_SERVICE=mysql:mariadb,keystone-api
+`
+
+The new entrypoint will resolve mariadb in mysql namespace and keystone-api in the same namespace as entrypoint was deployed in.
+
 ## Supported types of dependencies
 
 All dependencies are passed as environement variables in format of `DEPENDENCY_<NAME>` delimited by colon. For dependencies to be effective please use [readiness probes](http://kubernetes.io/docs/user-guide/production-pods/#liveness-and-readiness-probes-aka-health-checks) for all containers.

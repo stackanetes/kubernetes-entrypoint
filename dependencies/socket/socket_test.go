@@ -1,10 +1,9 @@
-package socket_test
+package socket
 
 import (
 	"fmt"
 	"os"
 
-	. "github.com/stackanetes/kubernetes-entrypoint/dependencies/socket"
 	"github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/mocks"
 
@@ -33,7 +32,7 @@ var _ = Describe("Socket", func() {
 	It("checks the name of a newly created socket", func() {
 		socket := NewSocket(existingSocketPath)
 
-		Expect(socket.GetName()).To(Equal(existingSocketPath))
+		Expect(socket.name).To(Equal(existingSocketPath))
 	})
 
 	It("resolves an existing socket socket", func() {
@@ -52,7 +51,7 @@ var _ = Describe("Socket", func() {
 
 		Expect(isResolved).To(Equal(false))
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(Equal(fmt.Sprintf(NonExistingErrorFormat, socket.GetName())))
+		Expect(err.Error()).To(Equal(fmt.Sprintf(NonExistingErrorFormat, socket)))
 	})
 
 	It("fails on trying to resolve a socket without permissions", func() {
@@ -62,7 +61,6 @@ var _ = Describe("Socket", func() {
 
 		Expect(isResolved).To(Equal(false))
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(Equal(fmt.Sprintf(NoPermsErrorFormat, socket.GetName())))
+		Expect(err.Error()).To(Equal(fmt.Sprintf(NoPermsErrorFormat, socket)))
 	})
-
 })

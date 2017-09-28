@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 	"net"
 	"os"
 	"strings"
@@ -24,4 +25,12 @@ func GetIp() (ip string, err error) {
 	//Take first element to get rid of subnet
 	ip = strings.Split(address[0].String(), "/")[0]
 	return
+}
+
+func ContainsSeparator(envString string, kind string) bool {
+	if strings.Contains(envString, env.Separator) {
+		fmt.Errorf("%s doesn't accept namespace: %s", kind, envString)
+		return true
+	}
+	return false
 }

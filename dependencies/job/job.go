@@ -7,37 +7,43 @@ import (
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
 )
 
-const FailingStatusFormat = "Job %v is not completed yet"
+const FailingStatusFormat = "Job %s is not completed yet"
 
 type Job struct {
-	name string
+	name      string
+	namespace string
 }
 
 func init() {
 	jobsEnv := fmt.Sprintf("%sJOBS", entry.DependencyPrefix)
-	if jobsDeps := env.SplitEnvToList(jobsEnv); len(jobsDeps) > 0 {
-		for _, dep := range jobsDeps {
-			entry.Register(NewJob(dep))
+	if jobsDeps := env.SplitEnvToDeps(jobsEnv); jobsDeps != nil {
+		if len(jobsDeps) > 0 {
+			for _, dep := range jobsDeps {
+				entry.Register(NewJob(dep.Name, dep.Namespace))
+			}
 		}
 	}
 }
 
-func NewJob(name string) Job {
-	return Job{name: name}
+func NewJob(name string, namespace string) Job {
+	return Job{
+		name:      name,
+		namespace: namespace,
+	}
 
 }
 
 func (j Job) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
-	job, err := entrypoint.Client().Jobs(entrypoint.GetNamespace()).Get(j.GetName())
+	job, err := entrypoint.Client().Jobs(j.namespace).Get(j.name)
 	if err != nil {
 		return false, err
 	}
 	if job.Status.Succeeded == 0 {
-		return false, fmt.Errorf(FailingStatusFormat, j.GetName())
+		return false, fmt.Errorf(FailingStatusFormat, j)
 	}
 	return true, nil
 }
 
-func (j Job) GetName() string {
-	return j.name
+func (j Job) String() string {
+	return fmt.Sprintf("Job %s in namespace %s", j.name, j.namespace)
 }

@@ -1,10 +1,9 @@
-package container_test
+package container
 
 import (
 	"fmt"
 	"os"
 
-	. "github.com/stackanetes/kubernetes-entrypoint/dependencies/container"
 	"github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/mocks"
 
@@ -30,7 +29,7 @@ var _ = Describe("Container", func() {
 	It("checks the name of a newly created container", func() {
 		container := NewContainer(mocks.MockContainerName)
 
-		Expect(container.GetName()).To(Equal(mocks.MockContainerName))
+		Expect(container.name).To(Equal(mocks.MockContainerName))
 	})
 
 	It(fmt.Sprintf("checks container resolution failure with %s not set", podEnvVariableName), func() {

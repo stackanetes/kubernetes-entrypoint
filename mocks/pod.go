@@ -17,12 +17,8 @@ type pClient struct {
 }
 
 const (
-	PodNotPresent             = "NOT_PRESENT"
-	PodEmptyContainerStatuses = "EMPTY_CONTAINTER_STATUSES"
-	PodEnvVariableValue       = "podlist"
-
-	IncorrectMatchLabel = "INCORRECT"
-	NotReadyMatchLabel  = "INCORRECT"
+	PodNotPresent       = "NOT_PRESENT"
+	PodEnvVariableValue = "podlist"
 )
 
 func (p pClient) Get(name string) (*v1.Pod, error) {

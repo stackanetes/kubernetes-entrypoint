@@ -34,6 +34,10 @@ func (d dummyResolver) GetName() (name string) {
 	return d.name
 }
 
+func (d dummyResolver) String() string {
+	return fmt.Sprintf("Dummy %s in namespace %s", d.name, d.namespace)
+}
+
 func init() {
 	testClient = mocks.NewClient()
 	testEntrypoint = mocks.NewEntrypointInNamespace(testNamespace)
@@ -75,11 +79,6 @@ var _ = Describe("Entrypoint", func() {
 		Expect(client).To(Equal(testClient))
 	})
 
-	It("checks Namespace() method", func() {
-		ns := testEntrypoint.GetNamespace()
-		Expect(ns).To(Equal(testNamespace))
-	})
-
 	It("resolves main entrypoint with a dummy dependency", func() {
 		defer GinkgoRecover()
 
@@ -104,6 +103,6 @@ var _ = Describe("Entrypoint", func() {
 		time.Sleep(5 * time.Second)
 
 		stdout, _ := ioutil.ReadAll(r)
-		Expect(string(stdout)).To(Equal(fmt.Sprintf("%sResolving %s\n%sDependency %s is resolved\n", loggerInfoText, dummyResolverName, loggerInfoText, dummyResolverName)))
+		Expect(string(stdout)).To(Equal(fmt.Sprintf("%sResolving %v\n%sDependency %v is resolved.\n", loggerInfoText, dummy, loggerInfoText, dummy)))
 	})
 })
