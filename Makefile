@@ -12,7 +12,7 @@ build: prepare
 	mkdir -p bin/$(GOARCH)
 	go build -o bin/$(GOARCH)/kubernetes_entrypoint
 
-linux-armh64:
+linux-arm64:
 	export GOOS="linux"; \
 	export GOARCH="arm64"; \
 	export GOPATH="$(PWD)/gopath"; \
