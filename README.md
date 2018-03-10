@@ -11,10 +11,10 @@ Kubernetes-entrypoint enables complex deployments on top of Kubernetes.
 
 ## Overview
 
-Kubernetes-entrypoint is meant to be used as a container entrypoint, which means it has to bundled in the container. 
+Kubernetes-entrypoint is meant to be used as a container entrypoint, which means it has to bundled in the container.
 Before launching the desired application, the entrypoint verifies and waits for all specified dependencies to be met.
 
-The Kubernetes-entrypoint queries directly the Kubernetes API and each container is self-aware of its dependencies and their states. 
+The Kubernetes-entrypoint queries directly the Kubernetes API and each container is self-aware of its dependencies and their states.
 Therefore, no centralized orchestration layer is required to manage deployments and scenarios such as failure recovery or pod migration become easy.
 
 ## Usage
@@ -28,7 +28,7 @@ Kubernetes-entrypoint introduces a wide variety of dependencies which can be use
 
 ## Latest features
 
-Extending functionality of kubernetes-entrypoint by adding an ability to specify dependencies in different namespaces. The new format for writing dependencies is `namespace:name`. To ensure backward compatibility if the dependency name is without colon, it behaves just like in previous versions so it assumes that dependecies are running at the same namespace as kubernetes-entrypoint. This feature is not implemented for container, config and socket dependency because in such cases the different namespace is irrelevant.
+Extending functionality of kubernetes-entrypoint by adding an ability to specify dependencies in different namespaces. The new format for writing dependencies is `namespace:name`, with the exception of pod dependencies which us json. To ensure backward compatibility if the `namespace:` is omitted, it behaves just like in previous versions so it assumes that dependecies are running at the same namespace as kubernetes-entrypoint. This feature is not implemented for container, config and socket dependency because in such cases the different namespace is irrelevant.
 
 For instance:
 `
@@ -71,14 +71,14 @@ Example:
 `DEPENDENCY_JOBS=nova-init,neutron-init`
 
 ### Config
-This dependency performs a container level templating of configuration files. It can template an ip address `{{ .IP }}` and hostname `{{ .HOSTNAME }}`. 
+This dependency performs a container level templating of configuration files. It can template an ip address `{{ .IP }}` and hostname `{{ .HOSTNAME }}`.
 Templated config has to be stored in an arbitrary directory `/configmaps/<name_of_file>/<name_of_file>`.
-This dependency requires `INTERFACE_NAME` environment variable to know which interface to use for obtain ip address. 
+This dependency requires `INTERFACE_NAME` environment variable to know which interface to use for obtain ip address.
 Example:
 
 `DEPENDENCY_CONFIG=/etc/nova/nova.conf`
 
-The Kubernetes-entrypoint will look for the configuration file `/configmaps/nova.conf/nova.conf`, template 
+The Kubernetes-entrypoint will look for the configuration file `/configmaps/nova.conf/nova.conf`, template
 `{{ .IP }} and {{ .HOSTNAME }}` tags and save the file as `/etc/nova/nova.conf`.
 
 ### Socket
@@ -86,6 +86,16 @@ Checks whether a given file exists and container has rights to read it.
 Example:
 
 `DEPENDENCY_SOCKET=/var/run/openvswitch/ovs.socket`
+
+### Pod
+Checks if at least one pod matching the specified labels is already running on the same host.
+In contrast to other dependencies, the syntax uses json in order to avoid inventing a new
+format to specify labels and the parsing complexities that would come with that.
+This dependency requires a `POD_NAME` env which can be easily passed through the
+[downward api](http://kubernetes.io/docs/user-guide/downward-api/). The `POD_NAME` variable is mandatory and is used to resolve dependencies.
+Example:
+
+`DEPENDENCY_POD="[{\"namespace\": \"foo\", \"labels\": {\"k1\": \"v1\", \"k2\": \"v2\"}}, {\"labels\": {\"k1\": \"v1\", \"k2\": \"v2\"}}]"`
 
 ## Image
 

@@ -2,6 +2,7 @@ package env
 
 import (
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -88,6 +89,46 @@ func TestSplitEmptyEnvWithColon(t *testing.T) {
 	list := SplitEnvToDeps("TEST_LIST")
 	if list != nil {
 		t.Errorf("Expected nil got %v", list)
+	}
+}
+
+func TestSplitPodEnvToDepsSuccess(t *testing.T) {
+	defer os.Unsetenv("NAMESPACE")
+	os.Setenv("NAMESPACE", `TEST_NAMESPACE`)
+	defer os.Unsetenv("TEST_LIST")
+	os.Setenv("TEST_LIST", `[{"namespace": "foo", "labels": {"k1": "v1", "k2": "v2"}}, {"labels": {"k1": "v1", "k2": "v2"}}]`)
+	actual := SplitPodEnvToDeps("TEST_LIST")
+	expected := []PodDependency{
+		PodDependency{Namespace: "foo", Labels: map[string]string{
+			"k1": "v1",
+			"k2": "v2",
+		}},
+		PodDependency{Namespace: "TEST_NAMESPACE", Labels: map[string]string{
+			"k1": "v1",
+			"k2": "v2",
+		}},
+	}
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Expected: %v Got: %v", expected, actual)
+	}
+}
+
+func TestSplitPodEnvToDepsUnset(t *testing.T) {
+	defer os.Unsetenv("TEST_LIST")
+	os.Setenv("TEST_LIST", "")
+	actual := SplitPodEnvToDeps("TEST_LIST")
+	if len(actual) != 0 {
+		t.Errorf("Expected: no dependencies Got: %v", actual)
+	}
+}
+
+func TestSplitPodEnvToDepsIgnoreInvalid(t *testing.T) {
+	defer os.Unsetenv("TEST_LIST")
+	os.Setenv("TEST_LIST", `[{"invalid": json}`)
+	actual := SplitPodEnvToDeps("TEST_LIST")
+	if len(actual) != 0 {
+		t.Errorf("Expected: ignore invalid dependencies Got: %v", actual)
 	}
 }
 
