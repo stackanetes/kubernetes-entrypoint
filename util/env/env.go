@@ -1,6 +1,7 @@
 package env
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 
@@ -13,6 +14,11 @@ const (
 
 type Dependency struct {
 	Name      string
+	Namespace string
+}
+
+type PodDependency struct {
+	Labels    map[string]string
 	Namespace string
 }
 
@@ -60,6 +66,33 @@ func SplitEnvToDeps(env string) (envList []Dependency) {
 	}
 
 	return envList
+}
+
+//SplitPodEnvToDeps returns list of PodDependency
+func SplitPodEnvToDeps(env string) []PodDependency {
+	deps := []PodDependency{}
+
+	namespace := GetBaseNamespace()
+
+	e := os.Getenv(env)
+	if e == "" {
+		return deps
+	}
+
+	err := json.Unmarshal([]byte(e), &deps)
+	if err != nil {
+		logger.Warning.Printf("Invalid format: ", e)
+		return []PodDependency{}
+	}
+
+	for i, dep := range deps {
+		if dep.Namespace == "" {
+			dep.Namespace = namespace
+			deps[i] = dep
+		}
+	}
+
+	return deps
 }
 
 //GetBaseNamespace returns default namespace when user set empty one

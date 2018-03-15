@@ -20,10 +20,8 @@ const (
 	IncorrectNamespaceDaemonsetName = "INCORRECT_DAEMONSET_NAMESPACE"
 	CorrectDaemonsetNamespace       = "CORRECT_DAEMONSET"
 
-	IncorrectMatchLabelsDaemonsetName = "DAEMONSET_INCORRECT_MATCH_LABELS"
-	NotReadyMatchLabelsDaemonsetName  = "DAEMONSET_NOT_READY_MATCH_LABELS"
-	IncorrectMatchLabel               = "INCORRECT"
-	NotReadyMatchLabel                = "INCORRECT"
+	FailingMatchLabelsDaemonsetName  = "DAEMONSET_INCORRECT_MATCH_LABELS"
+	NotReadyMatchLabelsDaemonsetName = "DAEMONSET_NOT_READY_MATCH_LABELS"
 )
 
 func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
@@ -31,10 +29,10 @@ func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
 
 	if name == FailingDaemonsetName {
 		return nil, fmt.Errorf("Mock daemonset didnt work")
-	} else if name == IncorrectMatchLabelsDaemonsetName {
-		matchLabelName = IncorrectMatchLabel
+	} else if name == FailingMatchLabelsDaemonsetName {
+		matchLabelName = FailingMatchLabel
 	} else if name == NotReadyMatchLabelsDaemonsetName {
-		matchLabelName = NotReadyMatchLabel
+		matchLabelName = SameHostNotReadyMatchLabel
 	}
 
 	ds := &extensions.DaemonSet{

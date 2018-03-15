@@ -17,8 +17,15 @@ type pClient struct {
 }
 
 const (
-	PodNotPresent       = "NOT_PRESENT"
-	PodEnvVariableValue = "podlist"
+	PodNotPresent                   = "NOT_PRESENT"
+	PodEnvVariableValue             = "podlist"
+	FailingMatchLabel               = "INCORRECT"
+	SameHostNotReadyMatchLabel      = "SAME_HOST_NOT_READY"
+	SameHostReadyMatchLabel         = "SAME_HOST_READY"
+	SameHostSomeReadyMatchLabel     = "SAME_HOST_SOME_READY"
+	DifferentHostReadyMatchLabel    = "DIFFERENT_HOST_READY"
+	DifferentHostNotReadyMatchLabel = "DIFFERENT_HOST_NOT_READY"
+	NoPodsMatchLabel                = "NO_PODS"
 )
 
 func (p pClient) Get(name string) (*v1.Pod, error) {
@@ -53,37 +60,38 @@ func (p pClient) DeleteCollection(options *api.DeleteOptions, listOptions api.Li
 }
 
 func (p pClient) List(options api.ListOptions) (*v1.PodList, error) {
-	if options.LabelSelector.String() == "name=INCORRECT" {
+	if options.LabelSelector.String() == fmt.Sprintf("name=%s", FailingMatchLabel) {
 		return nil, fmt.Errorf("Client received incorrect pod label names")
 	}
 
-	readyStatus := true
+	readyPodSameHost := NewPod(true, "127.0.0.1")
+	notReadyPodSameHost := NewPod(false, "127.0.0.1")
+	readyPodDifferentHost := NewPod(true, "10.0.0.1")
+	notReadyPodDifferentHost := NewPod(false, "10.0.0.1")
 
-	if options.LabelSelector.String() == "name=NOT_READY" {
-		readyStatus = false
+	var pods []v1.Pod
+
+	if options.LabelSelector.String() == fmt.Sprintf("name=%s", SameHostNotReadyMatchLabel) {
+		pods = []v1.Pod{notReadyPodSameHost}
+	}
+	if options.LabelSelector.String() == fmt.Sprintf("name=%s", SameHostReadyMatchLabel) {
+		pods = []v1.Pod{readyPodSameHost, notReadyPodDifferentHost}
+	}
+	if options.LabelSelector.String() == fmt.Sprintf("name=%s", SameHostSomeReadyMatchLabel) {
+		pods = []v1.Pod{readyPodSameHost, notReadyPodSameHost}
+	}
+	if options.LabelSelector.String() == fmt.Sprintf("name=%s", DifferentHostReadyMatchLabel) {
+		pods = []v1.Pod{notReadyPodSameHost, readyPodDifferentHost}
+	}
+	if options.LabelSelector.String() == fmt.Sprintf("name=%s", DifferentHostNotReadyMatchLabel) {
+		pods = []v1.Pod{notReadyPodDifferentHost}
+	}
+	if options.LabelSelector.String() == fmt.Sprintf("name=%s", NoPodsMatchLabel) {
+		pods = []v1.Pod{}
 	}
 
 	return &v1.PodList{
-		Items: []v1.Pod{
-			{
-				ObjectMeta: v1.ObjectMeta{Name: PodEnvVariableValue},
-				Status: v1.PodStatus{
-					HostIP: "127.0.01",
-					Conditions: []v1.PodCondition{
-						{
-							Type:   v1.PodReady,
-							Status: "True",
-						},
-					},
-					ContainerStatuses: []v1.ContainerStatus{
-						{
-							Name:  MockContainerName,
-							Ready: readyStatus,
-						},
-					},
-				},
-			},
-		},
+		Items: pods,
 	}, nil
 }
 
@@ -116,4 +124,30 @@ func (p pClient) Patch(name string, pt api.PatchType, data []byte, subresources 
 }
 func NewPClient() v1core.PodInterface {
 	return pClient{}
+}
+
+func NewPod(ready bool, hostIP string) v1.Pod {
+	podReadyStatus := v1.ConditionTrue
+	if !ready {
+		podReadyStatus = v1.ConditionFalse
+	}
+
+	return v1.Pod{
+		ObjectMeta: v1.ObjectMeta{Name: PodEnvVariableValue},
+		Status: v1.PodStatus{
+			HostIP: hostIP,
+			Conditions: []v1.PodCondition{
+				{
+					Type:   v1.PodReady,
+					Status: podReadyStatus,
+				},
+			},
+			ContainerStatuses: []v1.ContainerStatus{
+				{
+					Name:  MockContainerName,
+					Ready: ready,
+				},
+			},
+		},
+	}
 }

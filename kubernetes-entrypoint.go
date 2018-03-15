@@ -9,6 +9,7 @@ import (
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/container"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/daemonset"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/job"
+	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/pod"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/service"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/socket"
 	"github.com/stackanetes/kubernetes-entrypoint/logger"

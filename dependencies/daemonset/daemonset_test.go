@@ -62,7 +62,7 @@ var _ = Describe("Daemonset", func() {
 	})
 
 	It("checks resolution failure of a daemonset with incorrect match labels", func() {
-		daemonset, _ := NewDaemonset(mocks.IncorrectMatchLabelsDaemonsetName, daemonsetNamespace)
+		daemonset, _ := NewDaemonset(mocks.FailingMatchLabelsDaemonsetName, daemonsetNamespace)
 
 		isResolved, err := daemonset.IsResolved(testEntrypoint)
 
@@ -73,7 +73,7 @@ var _ = Describe("Daemonset", func() {
 	It(fmt.Sprintf("checks resolution failure of a daemonset with incorrect %s value", PodNameEnvVar), func() {
 		// Set POD_NAME to value not present in the mocks
 		os.Setenv(PodNameEnvVar, mocks.PodNotPresent)
-		daemonset, _ := NewDaemonset(mocks.IncorrectMatchLabelsDaemonsetName, daemonsetNamespace)
+		daemonset, _ := NewDaemonset(mocks.FailingMatchLabelsDaemonsetName, daemonsetNamespace)
 
 		isResolved, err := daemonset.IsResolved(testEntrypoint)
 
