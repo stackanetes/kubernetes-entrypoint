@@ -13,6 +13,7 @@ var dependencies []Resolver // List containing all dependencies to be resolved
 const (
 	//DependencyPrefix is a prefix for env variables
 	DependencyPrefix      = "DEPENDENCY_"
+	JsonSuffix            = "_JSON"
 	resolverSleepInterval = 2
 )
 

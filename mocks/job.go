@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	SucceedingJobName = "succeed"
-	FailingJobName    = "fail"
+	SucceedingJobName  = "succeed"
+	FailingJobName     = "fail"
+	SucceedingJobLabel = "succeed"
+	FailingJobLabel    = "fail"
 )
 
 type jClient struct {
@@ -41,7 +43,17 @@ func (j jClient) DeleteCollection(options *api.DeleteOptions, listOptions api.Li
 	return fmt.Errorf("Not implemented")
 }
 func (j jClient) List(options api.ListOptions) (*batch.JobList, error) {
-	return nil, fmt.Errorf("Not implemented")
+	var jobs []batch.Job
+	if options.LabelSelector.String() == fmt.Sprintf("name=%s", SucceedingJobLabel) {
+		jobs = []batch.Job{NewJob(1)}
+	} else if options.LabelSelector.String() == fmt.Sprintf("name=%s", FailingJobLabel) {
+		jobs = []batch.Job{NewJob(1), NewJob(0)}
+	} else {
+		return nil, fmt.Errorf("Mock job didnt work")
+	}
+	return &batch.JobList{
+		Items: jobs,
+	}, nil
 }
 
 func (j jClient) Update(job *batch.Job) (*batch.Job, error) {
@@ -61,4 +73,10 @@ func (j jClient) Patch(name string, pt api.PatchType, data []byte, subresources 
 }
 func NewJClient() v1batch.JobInterface {
 	return jClient{}
+}
+
+func NewJob(succeeded int32) batch.Job {
+	return batch.Job{
+		Status: batch.JobStatus{Succeeded: succeeded},
+	}
 }
