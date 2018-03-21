@@ -18,8 +18,9 @@ type Dependency struct {
 }
 
 type PodDependency struct {
-	Labels    map[string]string
-	Namespace string
+	Labels          map[string]string
+	Namespace       string
+	RequireSameNode bool
 }
 
 func SplitCommand() []string {
@@ -88,8 +89,8 @@ func SplitPodEnvToDeps(env string) []PodDependency {
 	for i, dep := range deps {
 		if dep.Namespace == "" {
 			dep.Namespace = namespace
-			deps[i] = dep
 		}
+		deps[i] = dep
 	}
 
 	return deps

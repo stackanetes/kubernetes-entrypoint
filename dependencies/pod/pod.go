@@ -18,16 +18,17 @@ const (
 )
 
 type Pod struct {
-	namespace string
-	labels    map[string]string
-	podName   string
+	namespace       string
+	labels          map[string]string
+	requireSameNode bool
+	podName         string
 }
 
 func init() {
 	podEnv := fmt.Sprintf("%sPOD", entry.DependencyPrefix)
 	if podDeps := env.SplitPodEnvToDeps(podEnv); podDeps != nil {
 		for _, dep := range podDeps {
-			pod, err := NewPod(dep.Labels, dep.Namespace)
+			pod, err := NewPod(dep.Labels, dep.Namespace, dep.RequireSameNode)
 			if err != nil {
 				logger.Error.Printf("Cannot initialize pod: %v", err)
 				continue
@@ -37,14 +38,15 @@ func init() {
 	}
 }
 
-func NewPod(labels map[string]string, namespace string) (*Pod, error) {
+func NewPod(labels map[string]string, namespace string, requireSameNode bool) (*Pod, error) {
 	if os.Getenv(PodNameEnvVar) == "" {
 		return nil, fmt.Errorf(PodNameNotSetErrorFormat, namespace)
 	}
 	return &Pod{
-		namespace: namespace,
-		labels:    labels,
-		podName:   os.Getenv(PodNameEnvVar),
+		labels:          labels,
+		namespace:       namespace,
+		requireSameNode: requireSameNode,
+		podName:         os.Getenv(PodNameEnvVar),
 	}, nil
 }
 
@@ -65,23 +67,27 @@ func (p Pod) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 
 	matchingPods := matchingPodList.Items
 	if len(matchingPods) == 0 {
-		return false, fmt.Errorf("No pods found matching labels: %v", p.labels)
+		return false, fmt.Errorf("Found no pods matching labels: %v", p.labels)
 	}
 
-	hostPodCount := 0
+	podCount := 0
 	for _, pod := range matchingPods {
-		if !isPodOnHost(&pod, myHost) {
+		podCount++
+		if p.requireSameNode && !isPodOnHost(&pod, myHost) {
 			continue
 		}
-		hostPodCount++
 		if isPodReady(pod) {
 			return true, nil
 		}
 	}
-	if hostPodCount == 0 {
-		return false, fmt.Errorf("Found no pods on host matching labels: %v", p.labels)
+	onHostClause := ""
+	if p.requireSameNode {
+		onHostClause = " on host"
+	}
+	if podCount == 0 {
+		return false, fmt.Errorf("Found no pods%v matching labels: %v", onHostClause, p.labels)
 	} else {
-		return false, fmt.Errorf("Found %v pods on host, but none ready, matching labels: %v", hostPodCount, p.labels)
+		return false, fmt.Errorf("Found %v pods%v, but none ready, matching labels: %v", podCount, onHostClause, p.labels)
 	}
 }
 

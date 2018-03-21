@@ -88,14 +88,16 @@ Example:
 `DEPENDENCY_SOCKET=/var/run/openvswitch/ovs.socket`
 
 ### Pod
-Checks if at least one pod matching the specified labels is already running on the same host.
+Checks if at least one pod matching the specified labels is already running, by
+default anywhere in the cluster, or use `"requireSameNode": true` to require a
+a pod on the same node.
 In contrast to other dependencies, the syntax uses json in order to avoid inventing a new
 format to specify labels and the parsing complexities that would come with that.
 This dependency requires a `POD_NAME` env which can be easily passed through the
 [downward api](http://kubernetes.io/docs/user-guide/downward-api/). The `POD_NAME` variable is mandatory and is used to resolve dependencies.
 Example:
 
-`DEPENDENCY_POD="[{\"namespace\": \"foo\", \"labels\": {\"k1\": \"v1\", \"k2\": \"v2\"}}, {\"labels\": {\"k1\": \"v1\", \"k2\": \"v2\"}}]"`
+`DEPENDENCY_POD="[{\"namespace\": \"foo\", \"labels\": {\"k1\": \"v1\", \"k2\": \"v2\"}}, {\"labels\": {\"k1\": \"v1\", \"k2\": \"v2\"}, \"requireSameNode\": true}]"`
 
 ## Image
 
