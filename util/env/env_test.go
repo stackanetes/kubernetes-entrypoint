@@ -96,17 +96,17 @@ func TestSplitPodEnvToDepsSuccess(t *testing.T) {
 	defer os.Unsetenv("NAMESPACE")
 	os.Setenv("NAMESPACE", `TEST_NAMESPACE`)
 	defer os.Unsetenv("TEST_LIST")
-	os.Setenv("TEST_LIST", `[{"namespace": "foo", "labels": {"k1": "v1", "k2": "v2"}}, {"labels": {"k1": "v1", "k2": "v2"}}]`)
+	os.Setenv("TEST_LIST", `[{"namespace": "foo", "labels": {"k1": "v1", "k2": "v2"}, "requireSameNode": true}, {"labels": {"k1": "v1", "k2": "v2"}}]`)
 	actual := SplitPodEnvToDeps("TEST_LIST")
 	expected := []PodDependency{
 		PodDependency{Namespace: "foo", Labels: map[string]string{
 			"k1": "v1",
 			"k2": "v2",
-		}},
+		}, RequireSameNode: true},
 		PodDependency{Namespace: "TEST_NAMESPACE", Labels: map[string]string{
 			"k1": "v1",
 			"k2": "v2",
-		}},
+		}, RequireSameNode: false},
 	}
 
 	if !reflect.DeepEqual(expected, actual) {

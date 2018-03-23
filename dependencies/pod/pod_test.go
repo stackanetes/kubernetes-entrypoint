@@ -14,6 +14,7 @@ import (
 const (
 	podEnvVariableValue = "podlist"
 	podNamespace        = "test"
+	requireSameNode     = true
 )
 
 var testEntrypoint entrypoint.EntrypointInterface
@@ -30,14 +31,14 @@ var _ = Describe("Pod", func() {
 
 	It(fmt.Sprintf("checks failure of new pod creation without %s set", PodNameEnvVar), func() {
 		os.Unsetenv(PodNameEnvVar)
-		pod, err := NewPod(testLabels, podNamespace)
+		pod, err := NewPod(testLabels, podNamespace, requireSameNode)
 
 		Expect(pod).To(BeNil())
 		Expect(err.Error()).To(Equal(fmt.Sprintf(PodNameNotSetErrorFormat, podNamespace)))
 	})
 
 	It(fmt.Sprintf("creates new pod with %s set and checks its name", PodNameEnvVar), func() {
-		pod, err := NewPod(testLabels, podNamespace)
+		pod, err := NewPod(testLabels, podNamespace, requireSameNode)
 		Expect(pod).NotTo(BeNil())
 		Expect(err).NotTo(HaveOccurred())
 
@@ -45,7 +46,7 @@ var _ = Describe("Pod", func() {
 	})
 
 	It("is resolved via all pods matching labels ready on same host", func() {
-		pod, _ := NewPod(map[string]string{"name": mocks.SameHostReadyMatchLabel}, podNamespace)
+		pod, _ := NewPod(map[string]string{"name": mocks.SameHostReadyMatchLabel}, podNamespace, requireSameNode)
 
 		isResolved, err := pod.IsResolved(testEntrypoint)
 
@@ -54,7 +55,7 @@ var _ = Describe("Pod", func() {
 	})
 
 	It("is resolved via some pods matching labels ready on same host", func() {
-		pod, _ := NewPod(map[string]string{"name": mocks.SameHostSomeReadyMatchLabel}, podNamespace)
+		pod, _ := NewPod(map[string]string{"name": mocks.SameHostSomeReadyMatchLabel}, podNamespace, requireSameNode)
 
 		isResolved, err := pod.IsResolved(testEntrypoint)
 
@@ -63,7 +64,7 @@ var _ = Describe("Pod", func() {
 	})
 
 	It("is not resolved via a pod matching labels not ready on same host", func() {
-		pod, _ := NewPod(map[string]string{"name": mocks.SameHostNotReadyMatchLabel}, podNamespace)
+		pod, _ := NewPod(map[string]string{"name": mocks.SameHostNotReadyMatchLabel}, podNamespace, requireSameNode)
 
 		isResolved, err := pod.IsResolved(testEntrypoint)
 
@@ -72,7 +73,7 @@ var _ = Describe("Pod", func() {
 	})
 
 	It("is not resolved via pod matching labels ready on different host", func() {
-		pod, _ := NewPod(map[string]string{"name": mocks.DifferentHostReadyMatchLabel}, podNamespace)
+		pod, _ := NewPod(map[string]string{"name": mocks.DifferentHostReadyMatchLabel}, podNamespace, requireSameNode)
 
 		isResolved, err := pod.IsResolved(testEntrypoint)
 
@@ -80,8 +81,17 @@ var _ = Describe("Pod", func() {
 		Expect(err).To(HaveOccurred())
 	})
 
-	It("is not resolved via pod matching labels not ready on different host", func() {
-		pod, _ := NewPod(map[string]string{"name": mocks.DifferentHostNotReadyMatchLabel}, podNamespace)
+	It("is resolved via pod matching labels ready on different host when requireSameNode=false", func() {
+		pod, _ := NewPod(map[string]string{"name": mocks.DifferentHostReadyMatchLabel}, podNamespace, false)
+
+		isResolved, err := pod.IsResolved(testEntrypoint)
+
+		Expect(isResolved).To(BeTrue())
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("is not resolved via pod matching labels not ready on different host when requireSameNode=false", func() {
+		pod, _ := NewPod(map[string]string{"name": mocks.DifferentHostNotReadyMatchLabel}, podNamespace, false)
 
 		isResolved, err := pod.IsResolved(testEntrypoint)
 
@@ -90,7 +100,7 @@ var _ = Describe("Pod", func() {
 	})
 
 	It("is not resolved via no pods matching labels", func() {
-		pod, _ := NewPod(map[string]string{"name": mocks.NoPodsMatchLabel}, podNamespace)
+		pod, _ := NewPod(map[string]string{"name": mocks.NoPodsMatchLabel}, podNamespace, requireSameNode)
 
 		isResolved, err := pod.IsResolved(testEntrypoint)
 
@@ -99,7 +109,7 @@ var _ = Describe("Pod", func() {
 	})
 
 	It("is not resolved when getting pods matching labels from api fails", func() {
-		pod, _ := NewPod(map[string]string{"name": mocks.FailingMatchLabel}, podNamespace)
+		pod, _ := NewPod(map[string]string{"name": mocks.FailingMatchLabel}, podNamespace, requireSameNode)
 
 		isResolved, err := pod.IsResolved(testEntrypoint)
 
@@ -109,7 +119,7 @@ var _ = Describe("Pod", func() {
 
 	It(fmt.Sprintf("is not resolved when getting current pod via %s value fails", PodNameEnvVar), func() {
 		os.Setenv(PodNameEnvVar, mocks.PodNotPresent)
-		pod, _ := NewPod(map[string]string{"name": mocks.SameHostReadyMatchLabel}, podNamespace)
+		pod, _ := NewPod(map[string]string{"name": mocks.SameHostReadyMatchLabel}, podNamespace, requireSameNode)
 
 		isResolved, err := pod.IsResolved(testEntrypoint)
 
