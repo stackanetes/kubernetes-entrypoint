@@ -25,7 +25,7 @@ type Pod struct {
 }
 
 func init() {
-	podEnv := fmt.Sprintf("%sPOD", entry.DependencyPrefix)
+	podEnv := fmt.Sprintf("%sPOD%s", entry.DependencyPrefix, entry.JsonSuffix)
 	if podDeps := env.SplitPodEnvToDeps(podEnv); podDeps != nil {
 		for _, dep := range podDeps {
 			pod, err := NewPod(dep.Labels, dep.Namespace, dep.RequireSameNode)

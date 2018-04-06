@@ -95,9 +95,9 @@ func TestSplitEmptyEnvWithColon(t *testing.T) {
 func TestSplitPodEnvToDepsSuccess(t *testing.T) {
 	defer os.Unsetenv("NAMESPACE")
 	os.Setenv("NAMESPACE", `TEST_NAMESPACE`)
-	defer os.Unsetenv("TEST_LIST")
-	os.Setenv("TEST_LIST", `[{"namespace": "foo", "labels": {"k1": "v1", "k2": "v2"}, "requireSameNode": true}, {"labels": {"k1": "v1", "k2": "v2"}}]`)
-	actual := SplitPodEnvToDeps("TEST_LIST")
+	defer os.Unsetenv("TEST_LIST_JSON")
+	os.Setenv("TEST_LIST_JSON", `[{"namespace": "foo", "labels": {"k1": "v1", "k2": "v2"}, "requireSameNode": true}, {"labels": {"k1": "v1", "k2": "v2"}}]`)
+	actual := SplitPodEnvToDeps("TEST_LIST_JSON")
 	expected := []PodDependency{
 		PodDependency{Namespace: "foo", Labels: map[string]string{
 			"k1": "v1",
@@ -127,6 +127,75 @@ func TestSplitPodEnvToDepsIgnoreInvalid(t *testing.T) {
 	defer os.Unsetenv("TEST_LIST")
 	os.Setenv("TEST_LIST", `[{"invalid": json}`)
 	actual := SplitPodEnvToDeps("TEST_LIST")
+	if len(actual) != 0 {
+		t.Errorf("Expected: ignore invalid dependencies Got: %v", actual)
+	}
+}
+
+func TestSplitJobEnvToDepsJsonSuccess(t *testing.T) {
+	defer os.Unsetenv("NAMESPACE")
+	os.Setenv("NAMESPACE", `TEST_NAMESPACE`)
+	defer os.Unsetenv("TEST_LIST_JSON")
+	os.Setenv("TEST_LIST_JSON", `[{"namespace": "foo", "labels": {"k1": "v1", "k2": "v2"}}, {"name": "bar"}]`)
+	actual := SplitJobEnvToDeps("TEST_LIST", "TEST_LIST_JSON")
+	expected := []JobDependency{
+		JobDependency{
+			Name:      "",
+			Namespace: "foo", Labels: map[string]string{
+				"k1": "v1",
+				"k2": "v2",
+			}},
+		JobDependency{Name: "bar", Namespace: "TEST_NAMESPACE", Labels: nil},
+	}
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Expected: %v Got: %v", expected, actual)
+	}
+}
+
+func TestSplitJobEnvToDepsPlainSuccess(t *testing.T) {
+	defer os.Unsetenv("NAMESPACE")
+	os.Setenv("NAMESPACE", `TEST_NAMESPACE`)
+	defer os.Unsetenv("TEST_LIST")
+	os.Setenv("TEST_LIST", `plain`)
+	actual := SplitJobEnvToDeps("TEST_LIST", "TEST_LIST_JSON")
+	expected := []JobDependency{
+		JobDependency{Name: "plain", Namespace: "TEST_NAMESPACE", Labels: nil},
+	}
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Expected: %v Got: %v", expected, actual)
+	}
+}
+
+func TestSplitJobEnvToDepsJsonPrecedence(t *testing.T) {
+	defer os.Unsetenv("NAMESPACE")
+	os.Setenv("NAMESPACE", `TEST_NAMESPACE`)
+	defer os.Unsetenv("TEST_LIST_JSON")
+	os.Setenv("TEST_LIST_JSON", `[{"name": "json"}]`)
+	defer os.Unsetenv("TEST_LIST")
+	os.Setenv("TEST_LIST", `plain`)
+	actual := SplitJobEnvToDeps("TEST_LIST", "TEST_LIST_JSON")
+	expected := []JobDependency{
+		JobDependency{Name: "json", Namespace: "TEST_NAMESPACE", Labels: nil},
+	}
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Expected: %v Got: %v", expected, actual)
+	}
+}
+
+func TestSplitJobEnvToDepsUnset(t *testing.T) {
+	actual := SplitJobEnvToDeps("TEST_LIST", "TEST_LIST_JSON")
+	if len(actual) != 0 {
+		t.Errorf("Expected: no dependencies Got: %v", actual)
+	}
+}
+
+func TestSplitJobEnvToDepsIgnoreInvalid(t *testing.T) {
+	defer os.Unsetenv("TEST_LIST_JSON")
+	os.Setenv("TEST_LIST_JSON", `[{"invalid": json}`)
+	actual := SplitJobEnvToDeps("TEST_LIST", "TEST_LIST_JSON")
 	if len(actual) != 0 {
 		t.Errorf("Expected: ignore invalid dependencies Got: %v", actual)
 	}

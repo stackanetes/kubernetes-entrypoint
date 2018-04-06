@@ -23,6 +23,12 @@ type PodDependency struct {
 	RequireSameNode bool
 }
 
+type JobDependency struct {
+	Name      string
+	Labels    map[string]string
+	Namespace string
+}
+
 func SplitCommand() []string {
 	command := os.Getenv("COMMAND")
 	if command == "" {
@@ -91,6 +97,50 @@ func SplitPodEnvToDeps(env string) []PodDependency {
 			dep.Namespace = namespace
 		}
 		deps[i] = dep
+	}
+
+	return deps
+}
+
+//SplitJobEnvToDeps returns list of JobDependency
+func SplitJobEnvToDeps(env string, jsonEnv string) []JobDependency {
+	deps := []JobDependency{}
+
+	namespace := GetBaseNamespace()
+
+	envVal := os.Getenv(env)
+	jsonEnvVal := os.Getenv(jsonEnv)
+	if jsonEnvVal != "" {
+		if envVal != "" {
+			logger.Warning.Printf("Ignoring %s since %s was specified", env, jsonEnv)
+		}
+		err := json.Unmarshal([]byte(jsonEnvVal), &deps)
+		if err != nil {
+			logger.Warning.Printf("Invalid format: ", jsonEnvVal)
+			return []JobDependency{}
+		}
+
+		valid := []JobDependency{}
+		for _, dep := range deps {
+			if dep.Namespace == "" {
+				dep.Namespace = namespace
+			}
+
+			valid = append(valid, dep)
+		}
+
+		return valid
+	}
+
+	if envVal != "" {
+		plainDeps := SplitEnvToDeps(env)
+
+		deps = []JobDependency{}
+		for _, dep := range plainDeps {
+			deps = append(deps, JobDependency{Name: dep.Name, Namespace: dep.Namespace})
+		}
+
+		return deps
 	}
 
 	return deps
