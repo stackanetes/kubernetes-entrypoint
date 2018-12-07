@@ -18,7 +18,7 @@ func Execute(command []string) (err error) {
 	env := os.Environ()
 	err = syscall.Exec(path, command, env)
 	if err != nil {
-		logger.Error.Print("Executing command %v failed: %v", command, err)
+		logger.Error.Printf("Executing command %v failed: %v", command, err)
 		return
 	}
 	return

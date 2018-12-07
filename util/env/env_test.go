@@ -28,7 +28,7 @@ func TestSplitEnvToListWithColon(t *testing.T) {
 		t.Errorf("Expected: not nil")
 	}
 	if len(list1) != 1 {
-		t.Errorf("Expected len to be 1 not %i", len(list1))
+		t.Errorf("Expected len to be 1 not %d", len(list1))
 	}
 	if list1[0].Name != "foo1" {
 		t.Errorf("Expected: foo1 got %s", list1[0])

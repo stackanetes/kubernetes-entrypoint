@@ -33,17 +33,10 @@ var hostname string
 // var testClient cli.ClientInterface
 
 func init() {
-	var err error
 	testConfigContents = fmt.Sprintf(testConfigContentsFormat, "{{ .HOSTNAME }}")
 
 	testTemplatePath = fmt.Sprintf("%s/%s/%s", templatePrefix, testConfigName, testConfigName)
 	testConfigPath = fmt.Sprintf("%s/%s", testDir, testConfigName)
-
-	hostname, err = os.Hostname()
-
-	if err != nil {
-		fmt.Errorf("Could not get hostname", err)
-	}
 }
 
 func setupOsEnvironment() (err error) {
@@ -121,6 +114,9 @@ var _ = Describe("Config", func() {
 		config.IsResolved(testEntrypoint)
 
 		result, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", testDir, testConfigName))
+		Expect(err).NotTo(HaveOccurred())
+
+		hostname, err := os.Hostname()
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedFile := fmt.Sprintf(testConfigContentsFormat, hostname)
