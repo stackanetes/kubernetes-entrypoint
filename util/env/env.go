@@ -58,7 +58,7 @@ func SplitEnvToDeps(env string) (envList []Dependency) {
 				continue
 			}
 			if nameAfterSplit[0] == "" {
-				logger.Warning.Printf("Invalid format, missing namespace", envVar)
+				logger.Warning.Printf("Invalid format, missing namespace %s", envVar)
 				continue
 			}
 
@@ -88,7 +88,7 @@ func SplitPodEnvToDeps(env string) []PodDependency {
 
 	err := json.Unmarshal([]byte(e), &deps)
 	if err != nil {
-		logger.Warning.Printf("Invalid format: ", e)
+		logger.Warning.Printf("Invalid format: %v", e)
 		return []PodDependency{}
 	}
 
@@ -116,7 +116,7 @@ func SplitJobEnvToDeps(env string, jsonEnv string) []JobDependency {
 		}
 		err := json.Unmarshal([]byte(jsonEnvVal), &deps)
 		if err != nil {
-			logger.Warning.Printf("Invalid format: ", jsonEnvVal)
+			logger.Warning.Printf("Invalid format: %s", jsonEnvVal)
 			return []JobDependency{}
 		}
 
