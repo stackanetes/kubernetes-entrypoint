@@ -10,6 +10,7 @@ import (
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
 	"github.com/stackanetes/kubernetes-entrypoint/util"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -47,7 +48,7 @@ func (c Container) IsResolved(entrypoint entry.EntrypointInterface) (bool, error
 	if myPodName == "" {
 		return false, fmt.Errorf(PodNameNotSetError)
 	}
-	pod, err := entrypoint.Client().Pods(env.GetBaseNamespace()).Get(myPodName)
+	pod, err := entrypoint.Client().Pods(env.GetBaseNamespace()).Get(myPodName, metav1.GetOptions{})
 	if err != nil {
 		return false, err
 	}

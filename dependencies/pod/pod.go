@@ -7,9 +7,8 @@ import (
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
-	api "k8s.io/client-go/1.5/pkg/api"
-	"k8s.io/client-go/1.5/pkg/api/v1"
-	"k8s.io/client-go/1.5/pkg/labels"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -51,14 +50,15 @@ func NewPod(labels map[string]string, namespace string, requireSameNode bool) (*
 }
 
 func (p Pod) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
-	myPod, err := entrypoint.Client().Pods(env.GetBaseNamespace()).Get(p.podName)
+	myPod, err := entrypoint.Client().Pods(env.GetBaseNamespace()).Get(p.podName, metav1.GetOptions{})
 	if err != nil {
 		return false, fmt.Errorf("Getting POD: %v failed : %v", p.podName, err)
 	}
 	myHost := myPod.Status.HostIP
 
-	label := labels.SelectorFromSet(p.labels)
-	opts := api.ListOptions{LabelSelector: label}
+	labelSelector := &metav1.LabelSelector{MatchLabels: p.labels}
+	label := metav1.FormatLabelSelector(labelSelector)
+	opts := metav1.ListOptions{LabelSelector: label}
 
 	matchingPodList, err := entrypoint.Client().Pods(p.namespace).List(opts)
 	if err != nil {

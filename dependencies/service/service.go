@@ -5,6 +5,7 @@ import (
 
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const FailingStatusFormat = "Service %v has no endpoints"
@@ -34,7 +35,7 @@ func NewService(name string, namespace string) Service {
 }
 
 func (s Service) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
-	e, err := entrypoint.Client().Endpoints(s.namespace).Get(s.name)
+	e, err := entrypoint.Client().Endpoints(s.namespace).Get(s.name, metav1.GetOptions{})
 	if err != nil {
 		return false, err
 	}
