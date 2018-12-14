@@ -29,6 +29,14 @@ type JobDependency struct {
 	Namespace string
 }
 
+type CustomResourceDependency struct {
+	ApiVersion string
+	Name       string
+	Namespace  string
+	Kind       string
+	Fields     []map[string]string
+}
+
 func SplitCommand() []string {
 	command := os.Getenv("COMMAND")
 	if command == "" {
@@ -141,6 +149,26 @@ func SplitJobEnvToDeps(env string, jsonEnv string) []JobDependency {
 		}
 
 		return deps
+	}
+
+	return deps
+}
+
+func SplitCustomResourceEnvToDeps(jsonEnv string) []CustomResourceDependency {
+	deps := []CustomResourceDependency{}
+	namespace := GetBaseNamespace()
+	jsonEnvVal := os.Getenv(jsonEnv)
+	err := json.Unmarshal([]byte(jsonEnvVal), &deps)
+	if err != nil {
+		logger.Warning.Printf("Invalid format: %s", jsonEnvVal)
+		return []CustomResourceDependency{}
+	}
+
+	for i, dep := range deps {
+		if dep.Namespace == "" {
+			dep.Namespace = namespace
+		}
+		deps[i] = dep
 	}
 
 	return deps

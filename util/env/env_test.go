@@ -125,7 +125,7 @@ func TestSplitPodEnvToDepsUnset(t *testing.T) {
 
 func TestSplitPodEnvToDepsIgnoreInvalid(t *testing.T) {
 	defer os.Unsetenv("TEST_LIST")
-	os.Setenv("TEST_LIST", `[{"invalid": json}`)
+	os.Setenv("TEST_LIST", `[{"invalid": json}]`)
 	actual := SplitPodEnvToDeps("TEST_LIST")
 	if len(actual) != 0 {
 		t.Errorf("Expected: ignore invalid dependencies Got: %v", actual)
@@ -194,8 +194,104 @@ func TestSplitJobEnvToDepsUnset(t *testing.T) {
 
 func TestSplitJobEnvToDepsIgnoreInvalid(t *testing.T) {
 	defer os.Unsetenv("TEST_LIST_JSON")
-	os.Setenv("TEST_LIST_JSON", `[{"invalid": json}`)
+	os.Setenv("TEST_LIST_JSON", `[{"invalid": json}]`)
 	actual := SplitJobEnvToDeps("TEST_LIST", "TEST_LIST_JSON")
+	if len(actual) != 0 {
+		t.Errorf("Expected: ignore invalid dependencies Got: %v", actual)
+	}
+}
+
+func TestSplitCustomResourceEnvToDeps(t *testing.T) {
+	defer os.Unsetenv("TEST_LIST_JSON")
+	os.Setenv("TEST_LIST_JSON", `
+[
+  {
+    "apiVersion": "api1",
+    "kind": "kind1",
+    "namespace": "foospace1",
+    "name": "foo1",
+    "fields": [
+      {
+        "key": "field1key1",
+        "value": "field1val1"
+      },
+      {
+        "key": "field1key2",
+        "value": "field1val2"
+      }
+    ]
+  },
+  {
+    "apiVersion": "api2",
+    "kind": "kind2",
+    "namespace": "foospace2",
+    "name": "foo2",
+    "fields": [
+      {
+        "key": "field2key1",
+        "value": "field2val1"
+      },
+      {
+        "key": "field2key2",
+        "value": "field2val2"
+      }
+    ]
+  }
+]`)
+
+	actual := SplitCustomResourceEnvToDeps("TEST_LIST_JSON")
+	expected := []CustomResourceDependency{
+		CustomResourceDependency{
+			ApiVersion: "api1",
+			Kind:       "kind1",
+			Namespace:  "foospace1",
+			Name:       "foo1",
+			Fields: []map[string]string{
+				{
+					"key":   "field1key1",
+					"value": "field1val1",
+				},
+				{
+					"key":   "field1key2",
+					"value": "field1val2",
+				},
+			},
+		},
+		CustomResourceDependency{
+			ApiVersion: "api2",
+			Kind:       "kind2",
+			Namespace:  "foospace2",
+			Name:       "foo2",
+			Fields: []map[string]string{
+				{
+					"key":   "field2key1",
+					"value": "field2val1",
+				},
+				{
+					"key":   "field2key2",
+					"value": "field2val2",
+				},
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Expected: %v Got: %v", expected, actual)
+	}
+
+}
+
+func TestSplitCustomResourceEnvToDepsUnset(t *testing.T) {
+	actual := SplitCustomResourceEnvToDeps("TEST_LIST_JSON")
+	if len(actual) != 0 {
+		t.Errorf("Expected: no dependencies Got: %v", actual)
+	}
+}
+
+func TestSplitCustomResourceEnvToDepsIgnoreInvalid(t *testing.T) {
+	defer os.Unsetenv("TEST_LIST_JSON")
+	os.Setenv("TEST_LIST_JSON", `[{"invalid": json}]`)
+	actual := SplitCustomResourceEnvToDeps("TEST_LIST_JSON")
 	if len(actual) != 0 {
 		t.Errorf("Expected: ignore invalid dependencies Got: %v", actual)
 	}
