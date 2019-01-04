@@ -99,6 +99,24 @@ Example:
 
 `DEPENDENCY_POD_JSON='[{"namespace": "foo", "labels": {"k1": "v1", "k2": "v2"}}, {"labels": {"k1": "v1", "k2": "v2"}, "requireSameNode": true}]'`
 
+### Custom Resource
+This dependency checks whether an arbitrary key on a given CustomResource matches a desired value. The environment variable `DEPENDENCY_CUSTOM_RESOURCE` dictates the specific object to watch, as well as the key and its desired value.
+
+For example, suppose you have the following `DEPENDENCY_CUSTOM_RESOURCE` and CustomResource:
+`DEPENDENCY_CUSTOM_RESOURCE='[{"apiVersion":"stabe.example.com/v1","kind":"ExampleResource","namespace":"MyExampleNamespace","name":"MyExampleResource","fields":[{"key":"spec.arbitrary_key","value":"ready"}]}]'`
+```
+Name: MyExampleResource
+Namespace: MyExampleNamespace
+Kind: ExampleResource
+ApiVersion: "stable.example.com/v1"
+Spec:
+  Arbitrary_key: not_ready
+```
+Given the above, kubernetes-entrypoint will wait until the value of `spec.arbitrary_key` has flipped from `not_ready` to `ready`.
+
+Note also that `fields` is a list, meaning that multiple fields can be monitered.
+
+
 ## Image
 
 Build process for image is triggered after each commit.

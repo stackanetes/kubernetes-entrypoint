@@ -1,6 +1,7 @@
 package mocks
 
 import (
+	"fmt"
 	cli "github.com/stackanetes/kubernetes-entrypoint/client"
 	v1batch "k8s.io/client-go/kubernetes/typed/batch/v1"
 	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -32,6 +33,33 @@ func (c Client) Endpoints(namespace string) v1core.EndpointsInterface {
 }
 func (c Client) Jobs(namespace string) v1batch.JobInterface {
 	return c.JobInterface
+}
+
+func (c Client) GetResourceName(kind, apiVersion string) (string, error) {
+	if kind == "failKind" {
+		return "failResourceName", fmt.Errorf("Expected Failure")
+	}
+	return "successResourceName", nil
+}
+
+func (c Client) CustomResource(apiVersion, namespace, resource, name string) (map[string]interface{}, error) {
+	if name == "failName" {
+		return nil, fmt.Errorf("Expected Failure")
+	} else if name == "resolved" {
+		return map[string]interface{}{
+			"simple_key": "simple_value",
+			"complex": map[string]interface{}{
+				"key": map[string]interface{}{
+					"with": map[string]interface{}{
+						"layers": "complex_value",
+					},
+				},
+			},
+		}, nil
+	}
+	return map[string]interface{}{
+		"key": "unexpected_value",
+	}, nil
 }
 
 func NewClient() cli.ClientInterface {
