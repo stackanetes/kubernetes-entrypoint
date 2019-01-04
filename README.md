@@ -103,7 +103,7 @@ Example:
 This dependency checks whether an arbitrary key on a given CustomResource matches a desired value. The environment variable `DEPENDENCY_CUSTOM_RESOURCE` dictates the specific object to watch, as well as the key and its desired value.
 
 For example, suppose you have the following `DEPENDENCY_CUSTOM_RESOURCE` and CustomResource:
-`DEPENDENCY_CUSTOM_RESOURCE='[{"apiVersion":"stabe.example.com/v1","kind":"ExampleResource","namespace":"MyExampleNamespace","name":"MyExampleResource","fields":[{"key":"spec.arbitrary_key","value":"ready"}]}]'`
+`DEPENDENCY_CUSTOM_RESOURCE='[{"apiVersion":"stable.example.com/v1","kind":"ExampleResource","namespace":"MyExampleNamespace","name":"MyExampleResource","fields":[{"key":"spec.arbitrary_key","value":"ready"}]}]'`
 ```
 Name: MyExampleResource
 Namespace: MyExampleNamespace

@@ -7,6 +7,7 @@ import (
 
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/config"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/container"
+	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/customresource"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/daemonset"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/job"
 	_ "github.com/stackanetes/kubernetes-entrypoint/dependencies/pod"
