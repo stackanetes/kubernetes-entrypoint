@@ -7,9 +7,8 @@ import (
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
-	api "k8s.io/client-go/1.5/pkg/api"
-	"k8s.io/client-go/1.5/pkg/api/v1"
-	"k8s.io/client-go/1.5/pkg/labels"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -50,21 +49,21 @@ func NewDaemonset(name string, namespace string) (*Daemonset, error) {
 
 func (d Daemonset) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	var myPodName string
-	daemonset, err := entrypoint.Client().DaemonSets(d.namespace).Get(d.name)
+	daemonset, err := entrypoint.Client().DaemonSets(d.namespace).Get(d.name, metav1.GetOptions{})
 
 	if err != nil {
 		return false, err
 	}
 
-	label := labels.SelectorFromSet(daemonset.Spec.Selector.MatchLabels)
-	opts := api.ListOptions{LabelSelector: label}
+	label := metav1.FormatLabelSelector(daemonset.Spec.Selector)
+	opts := metav1.ListOptions{LabelSelector: label}
 
 	daemonsetPods, err := entrypoint.Client().Pods(d.namespace).List(opts)
 	if err != nil {
 		return false, err
 	}
 
-	myPod, err := entrypoint.Client().Pods(env.GetBaseNamespace()).Get(d.podName)
+	myPod, err := entrypoint.Client().Pods(env.GetBaseNamespace()).Get(d.podName, metav1.GetOptions{})
 	if err != nil {
 		return false, fmt.Errorf("Getting POD: %v failed : %v", myPodName, err)
 	}

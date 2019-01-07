@@ -1,11 +1,11 @@
 package client
 
 import (
-	"k8s.io/client-go/1.5/kubernetes"
-	v1batch "k8s.io/client-go/1.5/kubernetes/typed/batch/v1"
-	v1core "k8s.io/client-go/1.5/kubernetes/typed/core/v1"
-	v1beta1extensions "k8s.io/client-go/1.5/kubernetes/typed/extensions/v1beta1"
-	"k8s.io/client-go/1.5/rest"
+	"k8s.io/client-go/kubernetes"
+	v1batch "k8s.io/client-go/kubernetes/typed/batch/v1"
+	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
+	v1beta1extensions "k8s.io/client-go/kubernetes/typed/extensions/v1beta1"
+	"k8s.io/client-go/rest"
 )
 
 type ClientInterface interface {

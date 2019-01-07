@@ -3,11 +3,11 @@ package mocks
 import (
 	"fmt"
 
-	v1beta1extensions "k8s.io/client-go/1.5/kubernetes/typed/extensions/v1beta1"
-	api "k8s.io/client-go/1.5/pkg/api"
-	v1 "k8s.io/client-go/1.5/pkg/api/v1"
-	extensions "k8s.io/client-go/1.5/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/1.5/pkg/watch"
+	v1beta1 "k8s.io/api/extensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
+	v1beta1extensions "k8s.io/client-go/kubernetes/typed/extensions/v1beta1"
 )
 
 type dClient struct {
@@ -24,7 +24,7 @@ const (
 	NotReadyMatchLabelsDaemonsetName = "DAEMONSET_NOT_READY_MATCH_LABELS"
 )
 
-func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
+func (d dClient) Get(name string, opts metav1.GetOptions) (*v1beta1.DaemonSet, error) {
 	matchLabelName := MockContainerName
 
 	if name == FailingDaemonsetName {
@@ -35,10 +35,10 @@ func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
 		matchLabelName = SameHostNotReadyMatchLabel
 	}
 
-	ds := &extensions.DaemonSet{
-		ObjectMeta: v1.ObjectMeta{Name: name},
-		Spec: extensions.DaemonSetSpec{
-			Selector: &extensions.LabelSelector{
+	ds := &v1beta1.DaemonSet{
+		ObjectMeta: metav1.ObjectMeta{Name: name},
+		Spec: v1beta1.DaemonSetSpec{
+			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{"name": matchLabelName},
 			},
 		},
@@ -52,34 +52,34 @@ func (d dClient) Get(name string) (*extensions.DaemonSet, error) {
 
 	return ds, nil
 }
-func (d dClient) Create(ds *extensions.DaemonSet) (*extensions.DaemonSet, error) {
+func (d dClient) Create(ds *v1beta1.DaemonSet) (*v1beta1.DaemonSet, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (d dClient) Delete(name string, options *api.DeleteOptions) error {
+func (d dClient) Delete(name string, options *metav1.DeleteOptions) error {
 	return fmt.Errorf("Not implemented")
 }
-func (d dClient) List(options api.ListOptions) (*extensions.DaemonSetList, error) {
+func (d dClient) List(options metav1.ListOptions) (*v1beta1.DaemonSetList, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (d dClient) Update(ds *extensions.DaemonSet) (*extensions.DaemonSet, error) {
+func (d dClient) Update(ds *v1beta1.DaemonSet) (*v1beta1.DaemonSet, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (d dClient) UpdateStatus(ds *extensions.DaemonSet) (*extensions.DaemonSet, error) {
+func (d dClient) UpdateStatus(ds *v1beta1.DaemonSet) (*v1beta1.DaemonSet, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (d dClient) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
+func (d dClient) DeleteCollection(options *metav1.DeleteOptions, listOptions metav1.ListOptions) error {
 	return fmt.Errorf("Not implemented")
 }
 
-func (d dClient) Watch(options api.ListOptions) (watch.Interface, error) {
+func (d dClient) Watch(options metav1.ListOptions) (watch.Interface, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (d dClient) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *extensions.DaemonSet, err error) {
+func (d dClient) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1beta1.DaemonSet, err error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 

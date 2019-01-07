@@ -3,10 +3,11 @@ package mocks
 import (
 	"fmt"
 
-	v1batch "k8s.io/client-go/1.5/kubernetes/typed/batch/v1"
-	api "k8s.io/client-go/1.5/pkg/api"
-	batch "k8s.io/client-go/1.5/pkg/apis/batch/v1"
-	"k8s.io/client-go/1.5/pkg/watch"
+	v1 "k8s.io/api/batch/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
+	v1batch "k8s.io/client-go/kubernetes/typed/batch/v1"
 )
 
 const (
@@ -19,64 +20,64 @@ const (
 type jClient struct {
 }
 
-func (j jClient) Get(name string) (*batch.Job, error) {
+func (j jClient) Get(name string, opts metav1.GetOptions) (*v1.Job, error) {
 	if name == SucceedingJobName {
-		return &batch.Job{
-			Status: batch.JobStatus{Succeeded: 1},
+		return &v1.Job{
+			Status: v1.JobStatus{Succeeded: 1},
 		}, nil
 	}
 	if name == FailingJobName {
-		return &batch.Job{
-			Status: batch.JobStatus{Succeeded: 0},
+		return &v1.Job{
+			Status: v1.JobStatus{Succeeded: 0},
 		}, nil
 	}
 	return nil, fmt.Errorf("Mock job didnt work")
 }
-func (j jClient) Create(job *batch.Job) (*batch.Job, error) {
+func (j jClient) Create(job *v1.Job) (*v1.Job, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (j jClient) Delete(name string, opts *api.DeleteOptions) error {
+func (j jClient) Delete(name string, opts *metav1.DeleteOptions) error {
 	return fmt.Errorf("Not implemented")
 }
-func (j jClient) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
+func (j jClient) DeleteCollection(options *metav1.DeleteOptions, listOptions metav1.ListOptions) error {
 	return fmt.Errorf("Not implemented")
 }
-func (j jClient) List(options api.ListOptions) (*batch.JobList, error) {
-	var jobs []batch.Job
-	if options.LabelSelector.String() == fmt.Sprintf("name=%s", SucceedingJobLabel) {
-		jobs = []batch.Job{NewJob(1)}
-	} else if options.LabelSelector.String() == fmt.Sprintf("name=%s", FailingJobLabel) {
-		jobs = []batch.Job{NewJob(1), NewJob(0)}
+func (j jClient) List(options metav1.ListOptions) (*v1.JobList, error) {
+	var jobs []v1.Job
+	if options.LabelSelector == fmt.Sprintf("name=%s", SucceedingJobLabel) {
+		jobs = []v1.Job{NewJob(1)}
+	} else if options.LabelSelector == fmt.Sprintf("name=%s", FailingJobLabel) {
+		jobs = []v1.Job{NewJob(1), NewJob(0)}
 	} else {
 		return nil, fmt.Errorf("Mock job didnt work")
 	}
-	return &batch.JobList{
+	return &v1.JobList{
 		Items: jobs,
 	}, nil
 }
 
-func (j jClient) Update(job *batch.Job) (*batch.Job, error) {
+func (j jClient) Update(job *v1.Job) (*v1.Job, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (j jClient) UpdateStatus(job *batch.Job) (*batch.Job, error) {
+func (j jClient) UpdateStatus(job *v1.Job) (*v1.Job, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (j jClient) Watch(options api.ListOptions) (watch.Interface, error) {
+func (j jClient) Watch(options metav1.ListOptions) (watch.Interface, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (j jClient) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *batch.Job, err error) {
+func (j jClient) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.Job, err error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 func NewJClient() v1batch.JobInterface {
 	return jClient{}
 }
 
-func NewJob(succeeded int32) batch.Job {
-	return batch.Job{
-		Status: batch.JobStatus{Succeeded: succeeded},
+func NewJob(succeeded int32) v1.Job {
+	return v1.Job{
+		Status: v1.JobStatus{Succeeded: succeeded},
 	}
 }

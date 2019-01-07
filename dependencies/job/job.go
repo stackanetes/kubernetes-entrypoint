@@ -6,9 +6,8 @@ import (
 	entry "github.com/stackanetes/kubernetes-entrypoint/entrypoint"
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
 	"github.com/stackanetes/kubernetes-entrypoint/util/env"
-	api "k8s.io/client-go/1.5/pkg/api"
-	"k8s.io/client-go/1.5/pkg/apis/batch/v1"
-	"k8s.io/client-go/1.5/pkg/labels"
+	v1 "k8s.io/api/batch/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const FailingStatusFormat = "Job %s is not completed yet"
@@ -51,14 +50,15 @@ func (j Job) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	var jobs []v1.Job
 
 	if j.name != "" {
-		job, err := iface.Get(j.name)
+		job, err := iface.Get(j.name, metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}
 		jobs = []v1.Job{*job}
 	} else if j.labels != nil {
-		label := labels.SelectorFromSet(j.labels)
-		opts := api.ListOptions{LabelSelector: label}
+		labelSelector := &metav1.LabelSelector{MatchLabels: j.labels}
+		label := metav1.FormatLabelSelector(labelSelector)
+		opts := metav1.ListOptions{LabelSelector: label}
 		jobList, err := iface.List(opts)
 		if err != nil {
 			return false, err
