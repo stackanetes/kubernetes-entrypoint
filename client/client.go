@@ -21,7 +21,7 @@ type ClientInterface interface {
 	CustomResource(apiVersion, namespace, resource, name string) (map[string]interface{}, error)
 }
 type Client struct {
-	*kubernetes.Clientset
+	Clientset kubernetes.Interface
 }
 
 func (c Client) Pods(namespace string) v1core.PodInterface {
