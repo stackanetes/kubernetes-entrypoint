@@ -25,7 +25,7 @@ type Container struct {
 func init() {
 	containerEnv := fmt.Sprintf("%sCONTAINER", entry.DependencyPrefix)
 	if util.ContainsSeparator(containerEnv, "Container") {
-		logger.Error.Printf(NamespaceNotSupported)
+		logger.Error(NamespaceNotSupported)
 		os.Exit(1)
 	}
 	if containerDeps := env.SplitEnvToDeps(containerEnv); containerDeps != nil {

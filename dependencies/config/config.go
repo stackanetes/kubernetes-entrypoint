@@ -33,14 +33,14 @@ type Config struct {
 func init() {
 	configEnv := fmt.Sprintf("%sCONFIG", entry.DependencyPrefix)
 	if util.ContainsSeparator(configEnv, "Config") {
-		logger.Error.Printf(NamespaceNotSupported)
+		logger.Error(NamespaceNotSupported)
 		os.Exit(1)
 	}
 	if configDeps := env.SplitEnvToDeps(configEnv); len(configDeps) > 0 {
 		for _, dep := range configDeps {
 			config, err := NewConfig(dep.Name, configmapDirPrefix)
 			if err != nil {
-				logger.Error.Printf("Cannot initialize config dep: %v", err)
+				logger.Error("Cannot initialize config dep: %v", err)
 			}
 			entry.Register(config)
 		}

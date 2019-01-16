@@ -23,7 +23,7 @@ type Socket struct {
 func init() {
 	socketEnv := fmt.Sprintf("%sSOCKET", entry.DependencyPrefix)
 	if util.ContainsSeparator(socketEnv, "Socket") {
-		logger.Error.Printf(NamespaceNotSupported)
+		logger.Error(NamespaceNotSupported)
 		os.Exit(1)
 	}
 	if socketDeps := env.SplitEnvToDeps(socketEnv); socketDeps != nil {

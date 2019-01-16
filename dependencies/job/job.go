@@ -35,7 +35,7 @@ func init() {
 
 func NewJob(name string, namespace string, labels map[string]string) *Job {
 	if name != "" && labels != nil {
-		logger.Warning.Printf("Cannot specify both name and labels for job depependency")
+		logger.Warning("Cannot specify both name and labels for job depependency")
 		return nil
 	}
 	return &Job{

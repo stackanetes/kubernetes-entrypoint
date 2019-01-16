@@ -29,7 +29,7 @@ func init() {
 		for _, dep := range podDeps {
 			pod, err := NewPod(dep.Labels, dep.Namespace, dep.RequireSameNode)
 			if err != nil {
-				logger.Error.Printf("Cannot initialize pod: %v", err)
+				logger.Error("Cannot initialize pod: %v", err)
 				continue
 			}
 			entry.Register(pod)

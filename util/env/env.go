@@ -62,11 +62,11 @@ func SplitEnvToDeps(env string) (envList []Dependency) {
 		if strings.Contains(envVar, Separator) {
 			nameAfterSplit := strings.Split(envVar, Separator)
 			if len(nameAfterSplit) != 2 {
-				logger.Warning.Printf("Invalid format got %s, expected namespace:name", envVar)
+				logger.Warning("Invalid format got %s, expected namespace:name", envVar)
 				continue
 			}
 			if nameAfterSplit[0] == "" {
-				logger.Warning.Printf("Invalid format, missing namespace %s", envVar)
+				logger.Warning("Invalid format, missing namespace %s", envVar)
 				continue
 			}
 
@@ -96,7 +96,7 @@ func SplitPodEnvToDeps(env string) []PodDependency {
 
 	err := json.Unmarshal([]byte(e), &deps)
 	if err != nil {
-		logger.Warning.Printf("Invalid format: %v", e)
+		logger.Warning("Invalid format: %v", e)
 		return []PodDependency{}
 	}
 
@@ -120,11 +120,11 @@ func SplitJobEnvToDeps(env string, jsonEnv string) []JobDependency {
 	jsonEnvVal := os.Getenv(jsonEnv)
 	if jsonEnvVal != "" {
 		if envVal != "" {
-			logger.Warning.Printf("Ignoring %s since %s was specified", env, jsonEnv)
+			logger.Warning("Ignoring %s since %s was specified", env, jsonEnv)
 		}
 		err := json.Unmarshal([]byte(jsonEnvVal), &deps)
 		if err != nil {
-			logger.Warning.Printf("Invalid format: %s", jsonEnvVal)
+			logger.Warning("Invalid format: %s", jsonEnvVal)
 			return []JobDependency{}
 		}
 
@@ -160,7 +160,7 @@ func SplitCustomResourceEnvToDeps(jsonEnv string) []CustomResourceDependency {
 	jsonEnvVal := os.Getenv(jsonEnv)
 	err := json.Unmarshal([]byte(jsonEnvVal), &deps)
 	if err != nil {
-		logger.Warning.Printf("Invalid format: %s", jsonEnvVal)
+		logger.Warning("Invalid format: %s", jsonEnvVal)
 		return []CustomResourceDependency{}
 	}
 
@@ -181,4 +181,9 @@ func GetBaseNamespace() string {
 		namespace = "default"
 	}
 	return namespace
+}
+
+//OutputJSON returns true if the OUTPUT_JSON environment variable is set
+func OutputJSON() bool {
+	return strings.EqualFold(os.Getenv("OUTPUT_JSON"), "true")
 }

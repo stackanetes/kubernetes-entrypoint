@@ -23,7 +23,7 @@ func main() {
 	var entrypoint *entry.Entrypoint
 	var err error
 	if entrypoint, err = entry.New(nil); err != nil {
-		logger.Error.Printf("Creating entrypoint failed: %v", err)
+		logger.Error("Creating entrypoint failed: %v", err)
 		os.Exit(1)
 	}
 
@@ -32,12 +32,12 @@ func main() {
 	if comm = env.SplitCommand(); len(comm) == 0 {
 		// TODO(DTadrzak): we should consider other options to handle whether pod
 		// is an init-container
-		logger.Warning.Printf("COMMAND env is empty")
+		logger.Warning("COMMAND env is empty")
 		os.Exit(0)
 	}
 
 	if err = command.Execute(comm); err != nil {
-		logger.Error.Printf("Cannot execute command: %v", err)
+		logger.Error("Cannot execute command: %v", err)
 		os.Exit(1)
 	}
 }

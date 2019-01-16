@@ -63,16 +63,16 @@ func (e Entrypoint) Resolve() {
 		wg.Add(1)
 		go func(dep Resolver) {
 			defer wg.Done()
-			logger.Info.Printf("Resolving %v", dep)
+			logger.Info("Resolving %v", dep)
 			var err error
 			status := false
 			for status == false {
 				if status, err = dep.IsResolved(e); err != nil {
-					logger.Warning.Printf("Resolving dependency %s failed: %v .", dep, err)
+					logger.Warning("Resolving dependency %s failed: %v .", dep, err)
 				}
 				time.Sleep(resolverSleepInterval * time.Second)
 			}
-			logger.Info.Printf("Dependency %v is resolved.", dep)
+			logger.Info("Dependency %v is resolved.", dep)
 
 		}(dep)
 	}

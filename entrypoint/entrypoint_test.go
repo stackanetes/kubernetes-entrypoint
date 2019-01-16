@@ -52,9 +52,10 @@ var _ = Describe("Entrypoint", func() {
 	dummy := dummyResolver{name: dummyResolverName}
 
 	BeforeEach(func() {
-		logger.Info.SetFlags(0)
-		logger.Warning.SetFlags(0)
-		logger.Error.SetFlags(0)
+		logger.InfoLog.SetFlags(0)
+		logger.WarningLog.SetFlags(0)
+		logger.ErrorLog.SetFlags(0)
+		logger.OutputJSON = false
 	})
 
 	AfterEach(func() {
@@ -89,7 +90,7 @@ var _ = Describe("Entrypoint", func() {
 			os.Stdout = tmp
 		}()
 
-		logger.Info.SetOutput(w)
+		logger.InfoLog.SetOutput(w)
 
 		os.Stdout = w
 		go func() {

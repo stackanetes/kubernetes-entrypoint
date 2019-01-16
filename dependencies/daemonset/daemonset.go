@@ -28,7 +28,7 @@ func init() {
 		for _, dep := range daemonsetsDeps {
 			daemonset, err := NewDaemonset(dep.Name, dep.Namespace)
 			if err != nil {
-				logger.Error.Printf("Cannot initialize daemonset: %v", err)
+				logger.Error("Cannot initialize daemonset: %v", err)
 				continue
 			}
 			entry.Register(daemonset)
