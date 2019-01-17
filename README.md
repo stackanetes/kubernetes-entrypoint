@@ -26,6 +26,36 @@ There is only one required environment variable `COMMAND` which specifies a comm
 
 ## Latest features
 
+By setting the `OUTPUT_JSON` environment variable to `true`, kubernetes-entrypoint will suppress the human-readable logging and replace it with a machine-readable JSON object which lists all unresolved dependencies.
+This JSON object will consist of a list, where each list item consists of the `Dependency` info as another JSON object and the `Reason` why it is not met.
+
+The following shows an example of an unmet CustomResourceDependency
+
+```
+[
+    {
+        "Dependency": {
+            "Type": "CustomResource",
+            "Details": {
+                "ApiVersion": "example.com/v1",
+                "Fields": [
+                    {
+                        "key": "spec.key",
+                        "value": "ready"
+                    }
+                ],
+                "Kind": "ExampleResource",
+                "Name": "example",
+                "Namespace": "default"
+            }
+        },
+        "Reason": "[spec.key] NEEDS: [ready], HAS: [not_ready];"
+    }
+]
+```
+
+## Specifying Namespaces
+
 Extending functionality of kubernetes-entrypoint by adding an ability to specify dependencies in different namespaces. The new format for writing dependencies is `namespace:name`, with the exception of pod dependencies (which use JSON).
 In order to ensure backward compatibility, if `namespace` is omitted, it is assumed that dependencies are running in the same namespace as kubernetes-entrypoint, just like in previous versions.
 This feature is not implemented for Container, Config or Socket dependency because the different namespace is irrelevant for those cases.

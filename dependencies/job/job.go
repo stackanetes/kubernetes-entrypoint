@@ -77,6 +77,14 @@ func (j Job) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	return true, nil
 }
 
+// GetDependency returns the details associated with this dependency
+func (j Job) GetDependency() map[string]interface{} {
+	return map[string]interface{}{
+		"Type":    "Job",
+		"Details": j,
+	}
+}
+
 func (j Job) String() string {
 	var prefix string
 	if j.name != "" {

@@ -94,7 +94,7 @@ var _ = Describe("CustomResource", func() {
 		}
 		isResolved, err := unresolvedResource.IsResolved(testEntrypoint)
 
-		errMsg := "Expected value of [key] to be [expected_value], but got [unexpected_value]"
+		errMsg := "[key] NEEDS: [expected_value], HAS: [unexpected_value];"
 		Expect(isResolved).To(Equal(false))
 		Expect(err.Error()).To(Equal(errMsg))
 	})

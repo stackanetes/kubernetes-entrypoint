@@ -34,6 +34,12 @@ func (d dummyResolver) GetName() (name string) {
 	return d.name
 }
 
+func (d dummyResolver) GetDependency() map[string]interface{} {
+	return map[string]interface{}{
+		"dummyResolver": d,
+	}
+}
+
 func (d dummyResolver) String() string {
 	return fmt.Sprintf("Dummy %s in namespace %s", d.name, d.namespace)
 }

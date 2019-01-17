@@ -99,6 +99,14 @@ func isPodReady(pod v1.Pod) bool {
 	return false
 }
 
+// GetDependency returns the details associated with this dependency
+func (d Daemonset) GetDependency() map[string]interface{} {
+	return map[string]interface{}{
+		"Type":    "Daemonset",
+		"Details": d,
+	}
+}
+
 func (d Daemonset) String() string {
 	return fmt.Sprintf("Daemonset %s in namespace %s", d.name, d.namespace)
 }

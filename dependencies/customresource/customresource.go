@@ -50,6 +50,7 @@ func (cr CustomResource) IsResolved(entrypoint entry.EntrypointInterface) (bool,
 		return false, err
 	}
 
+	var conflicts strings.Builder
 	for _, field := range cr.Fields {
 		key := field["key"]
 		expected := field["value"]
@@ -58,8 +59,13 @@ func (cr CustomResource) IsResolved(entrypoint entry.EntrypointInterface) (bool,
 		actual := extractVal(myCustomResource, key)
 
 		if actual != expected {
-			return false, fmt.Errorf("Expected value of [%s] to be [%s], but got [%s]", key, expected, actual)
+			conflicts.WriteString(fmt.Sprintf("[%s] NEEDS: [%s], HAS: [%s];", key, expected, actual))
 		}
+	}
+
+	if conflicts.Len() != 0 {
+		err := fmt.Errorf(conflicts.String())
+		return false, err
 	}
 
 	return true, nil
@@ -72,4 +78,17 @@ func extractVal(customResource map[string]interface{}, key string) string {
 		customResource = customResource[first].(map[string]interface{})
 	}
 	return customResource[key].(string)
+}
+
+// GetDependency returns the details associated with this dependency
+func (cr CustomResource) GetDependency() map[string]interface{} {
+	return map[string]interface{}{
+		"Type":    "CustomResource",
+		"Details": cr,
+	}
+}
+
+func (cr CustomResource) String() string {
+	return fmt.Sprintf("CustomResource with apiVersion %s, kind %s, name %s, and namespace %s",
+		cr.APIVersion, cr.Kind, cr.Name, cr.Namespace)
 }

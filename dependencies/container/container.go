@@ -65,6 +65,14 @@ func (c Container) IsResolved(entrypoint entry.EntrypointInterface) (bool, error
 	return false, nil
 }
 
+// GetDependency returns the details associated with this dependency
+func (c Container) GetDependency() map[string]interface{} {
+	return map[string]interface{}{
+		"Type":    "Container",
+		"Details": c,
+	}
+}
+
 func (c Container) String() string {
 	return fmt.Sprintf("Container %s", c.name)
 }

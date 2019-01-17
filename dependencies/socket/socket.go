@@ -53,6 +53,14 @@ func (s Socket) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) {
 	return false, err
 }
 
+// GetDependency returns the details associated with this dependency
+func (s Socket) GetDependency() map[string]interface{} {
+	return map[string]interface{}{
+		"Type":    "Socket",
+		"Details": s,
+	}
+}
+
 func (s Socket) String() string {
 	return fmt.Sprintf("Socket %s", s.name)
 }

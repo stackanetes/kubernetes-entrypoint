@@ -102,6 +102,14 @@ func createDirectory(file string) error {
 	return os.MkdirAll(filepath.Dir(file), 0755)
 }
 
+// GetDependency returns the details associated with this dependency
+func (c Config) GetDependency() map[string]interface{} {
+	return map[string]interface{}{
+		"Type":    "Config",
+		"Details": c,
+	}
+}
+
 func (c Config) String() string {
 	return fmt.Sprintf("Config %s", c.name)
 }

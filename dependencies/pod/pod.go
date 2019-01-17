@@ -107,6 +107,14 @@ func isPodReady(pod v1.Pod) bool {
 	return false
 }
 
+// GetDependency returns the details associated with this dependency
+func (p Pod) GetDependency() map[string]interface{} {
+	return map[string]interface{}{
+		"Type":    "Pod",
+		"Details": p,
+	}
+}
+
 func (p Pod) String() string {
 	return fmt.Sprintf("Pod on same host with labels %v in namespace %s", p.labels, p.namespace)
 }

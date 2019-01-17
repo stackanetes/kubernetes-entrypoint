@@ -48,6 +48,14 @@ func (s Service) IsResolved(entrypoint entry.EntrypointInterface) (bool, error) 
 	return false, fmt.Errorf(FailingStatusFormat, s.name)
 }
 
+// GetDependency returns the details associated with this dependency
+func (s Service) GetDependency() map[string]interface{} {
+	return map[string]interface{}{
+		"Type":    "Service",
+		"Details": s,
+	}
+}
+
 func (s Service) String() string {
 	return fmt.Sprintf("Service %s in namespace %s", s.name, s.namespace)
 }

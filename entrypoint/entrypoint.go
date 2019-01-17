@@ -1,6 +1,8 @@
 package entrypoint
 
 import (
+	"encoding/json"
+	"fmt"
 	"sync"
 	"time"
 
@@ -10,6 +12,7 @@ import (
 )
 
 var dependencies []Resolver // List containing all dependencies to be resolved
+
 const (
 	//DependencyPrefix is a prefix for env variables
 	DependencyPrefix      = "DEPENDENCY_"
@@ -20,6 +23,33 @@ const (
 //Resolver is an interface which all dependencies should implement
 type Resolver interface {
 	IsResolved(entrypoint EntrypointInterface) (bool, error)
+	GetDependency() map[string]interface{}
+}
+
+//Conflict is used to explain which dependencies are causing errors or a given dependency
+type Conflict struct {
+	Dependency map[string]interface{}
+	resolved   bool
+	Reason     string
+	mux        sync.Mutex
+}
+
+//NewConflict creates a new Conflict object
+func NewConflict(dep map[string]interface{}) *Conflict {
+	return &Conflict{
+		Dependency: dep,
+		resolved:   false,
+		Reason:     "Not yet checked",
+		mux:        sync.Mutex{},
+	}
+}
+
+//Update changes the state and cause of a conflict
+func (c *Conflict) Update(resolved bool, reason string) {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+	c.resolved = resolved
+	c.Reason = reason
 }
 
 type EntrypointInterface interface {
@@ -59,8 +89,11 @@ func (e Entrypoint) Client() (client cli.ClientInterface) {
 //Resolve is a main loop which iterates through all dependencies and resolves them
 func (e Entrypoint) Resolve() {
 	var wg sync.WaitGroup
+	defer wg.Wait()
+	conflicts := make(map[Resolver]*Conflict)
 	for _, dep := range dependencies {
 		wg.Add(1)
+		conflicts[dep] = NewConflict(dep.GetDependency())
 		go func(dep Resolver) {
 			defer wg.Done()
 			logger.Info("Resolving %v", dep)
@@ -69,13 +102,38 @@ func (e Entrypoint) Resolve() {
 			for status == false {
 				if status, err = dep.IsResolved(e); err != nil {
 					logger.Warning("Resolving dependency %s failed: %v .", dep, err)
+					conflicts[dep].Update(false, err.Error())
 				}
-				time.Sleep(resolverSleepInterval * time.Second)
+				if status == false {
+					time.Sleep(resolverSleepInterval * time.Second)
+				}
 			}
+			conflicts[dep].Update(true, "")
 			logger.Info("Dependency %v is resolved.", dep)
-
 		}(dep)
 	}
-	wg.Wait()
 
+	if !logger.OutputJSON {
+		return
+	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			var unresolved []*Conflict
+			for _, dep := range dependencies {
+				if !conflicts[dep].resolved {
+					unresolved = append(unresolved, conflicts[dep])
+				}
+			}
+
+			if len(unresolved) == 0 {
+				return
+			}
+			j, _ := json.Marshal(unresolved)
+			fmt.Println(string(j))
+			time.Sleep(resolverSleepInterval * time.Second)
+		}
+	}()
 }
