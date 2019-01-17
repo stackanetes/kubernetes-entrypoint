@@ -26,6 +26,34 @@ There is only one required environment variable `COMMAND` which specifies a comm
 
 ## Latest features
 
+### Exponential Backoff
+Until recently, kubernetes-entrypoint would check the status of each dependency every 2.0 seconds. With the most recent change, it will now use an [exponential backoff](https://en.wikipedia.org/wiki/Exponential_backoff).
+The following configurable environment variables have been added:
+
+| Variable name | Default value | Meaning |
+|:-------------:|:-------------:|:-------:|
+| `INITIAL_SLEEP_INTERVAL` | 2000.0 | The initial number of milliseconds to wait before rechecking |
+| `BACKOFF_RATE` | 1.25 | The rate at which the sleep interval will be increased each time a dependency is checked |
+| `MAX_SLEEP_INTERVAL` | 20000.0 | The maximum number of milliseconds to wait between rechecks |
+
+For example, if `INITIAL_SLEEP_INTERVAL` is set to `1500.0`, `BACKOFF_RATE` is set to `2.0`, and `MAX_SLEEP_INTERVAL` is set to `10000.0`,  kubernetes-entrypoint will act as follows:
+
+1. Check the dependency
+2. Sleep for 1.5 seconds
+3. Recheck the dependency
+4. Sleep fo 3.0 seconds
+5. Recheck the dependency
+6. Sleep for 6.0 seconds
+7. etc...
+8. Sleep for 10.0 seconds
+9. Recheck the dependency
+10. Sleep for 10.0 seconds
+11. etc...
+
+
+Note that if machine readable JSON is being used, the status will still be printed every 2.0 seconds, regardless of how often each dependency is being checked.
+
+### Machine Reabable JSON
 By setting the `OUTPUT_JSON` environment variable to `true`, kubernetes-entrypoint will suppress the human-readable logging and replace it with a machine-readable JSON object which lists all unresolved dependencies.
 This JSON object will consist of a list, where each list item consists of the `Dependency` info as another JSON object and the `Reason` why it is not met.
 

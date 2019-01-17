@@ -3,6 +3,7 @@ package env
 import (
 	"encoding/json"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/stackanetes/kubernetes-entrypoint/logger"
@@ -186,4 +187,22 @@ func GetBaseNamespace() string {
 //OutputJSON returns true if the OUTPUT_JSON environment variable is set
 func OutputJSON() bool {
 	return strings.EqualFold(os.Getenv("OUTPUT_JSON"), "true")
+}
+
+//GetEnvFloat gets the value of an environment variable as a float
+func GetEnvFloat(name string, def float64) float64 {
+	if strVal, ok := os.LookupEnv(name); ok {
+		if floatVal, err := strconv.ParseFloat(strVal, 64); err == nil {
+			return floatVal
+		}
+	}
+	return def
+}
+
+//Backoff returns the next slot in an exponential backoff
+func Backoff(n, base, max float64) float64 {
+	if n*base < max {
+		return n * base
+	}
+	return max
 }
