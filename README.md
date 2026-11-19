@@ -60,6 +60,64 @@ Example:
 
 A simple example of how to use downward API to get `POD_NAME` can be found [here](https://raw.githubusercontent.com/kubernetes/kubernetes.github.io/master/docs/user-guide/downward-api/dapi-pod.yaml).
 
+### Deployment
+
+Waits for a named `apps/v1` Deployment to converge to its current specification:
+
+```sh
+DEPENDENCY_DEPLOYMENT=api,other-namespace:worker
+```
+
+An already-converged Deployment resolves immediately.
+Incomplete rollouts are retried with a `rollout incomplete` message; inspect the
+Deployment in Kubernetes to find out why it is not converging.
+
+To wait for a particular release, specify expected **top-level metadata annotations**:
+
+```sh
+DEPENDENCY_DEPLOYMENT_JSON='[{"name":"api","namespace":"application","annotations":{"example.com/release-id":"my-release:42"}}]'
+```
+
+`name` is required. `namespace` is optional and defaults as above. `annotations` is
+an optional map of string keys to expected string values; missing or empty maps
+use current-state convergence only. Every expected key must exist and match exactly,
+including empty-string values; extra actual annotations are allowed. Pod-template
+annotations do not substitute for Deployment metadata annotations. Keys are freely
+configurable, and a different or newer release marker is never silently accepted.
+When both variables are nonempty, JSON takes precedence with a warning. Invalid
+configuration is logged and may **skip dependencies rather than terminate the
+process**, following existing dependency registration behavior. Malformed JSON or
+invalid field types skip the JSON configuration; entries missing a name are skipped.
+
+#### Helm release-aware ordering
+
+A Job can start before Helm submits a Deployment update, while the previous release
+is already complete. Completion checks alone cannot distinguish that old release.
+Render a shared marker, such as `.Release.Name` plus `.Release.Revision`, into the
+Deployment and the Job's expected dependency.
+
+Deployment template (top-level metadata, not `spec.template.metadata`):
+
+```yaml
+metadata:
+  annotations:
+    example.com/release-id: "{{ .Release.Name }}:{{ .Release.Revision }}"
+```
+
+Job environment template (set `NAMESPACE` or specify `namespace` when needed):
+
+```yaml
+env:
+  - name: DEPENDENCY_DEPLOYMENT_JSON
+    value: >-
+      [{"name":"api","annotations":{"example.com/release-id":"{{ .Release.Name }}:{{ .Release.Revision }}"}}]
+```
+
+Top-level Deployment annotation changes increment `metadata.generation` without
+changing the Pod template or forcing a Pod rollout. For an annotation-only upgrade,
+controller acknowledgement can therefore resolve the dependency using the existing
+converged replicas.
+
 ### Job
 Checks if a given job or set of jobs with matching name and/or labels succeeded at least once.
 In order to use labels, `DEPENDENCY_JOBS_JSON` must be used.

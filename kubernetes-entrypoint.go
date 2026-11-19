@@ -23,6 +23,7 @@ import (
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/container"
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/customresource"
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/daemonset"
+	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/deployment"
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/job"
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/pod"
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/service"

@@ -39,6 +39,7 @@ type ClientInterface interface {
 	Jobs(string) v1batch.JobInterface
 	EndpointSlices(string) discoveryv1client.EndpointSliceInterface
 	DaemonSets(string) appsv1.DaemonSetInterface
+	Deployments(string) appsv1.DeploymentInterface
 	Services(string) v1core.ServiceInterface
 	CustomResource(ctx context.Context, apiVersion, namespace, resource, name string) (*unstructured.Unstructured, error)
 }
@@ -61,6 +62,10 @@ func (c Client) EndpointSlices(namespace string) discoveryv1client.EndpointSlice
 
 func (c Client) DaemonSets(namespace string) appsv1.DaemonSetInterface {
 	return c.client.AppsV1().DaemonSets(namespace)
+}
+
+func (c Client) Deployments(namespace string) appsv1.DeploymentInterface {
+	return c.client.AppsV1().Deployments(namespace)
 }
 
 func (c Client) Services(namespace string) v1core.ServiceInterface {

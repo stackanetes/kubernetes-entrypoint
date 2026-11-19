@@ -44,6 +44,12 @@ type JobDependency struct {
 	Namespace string            `json:"namespace"`
 }
 
+type DeploymentDependency struct {
+	Name        string            `json:"name"`
+	Namespace   string            `json:"namespace"`
+	Annotations map[string]string `json:"annotations"`
+}
+
 type CustomResourceDependency struct {
 	APIVersion string              `json:"apiVersion"`
 	Name       string              `json:"name"`
@@ -162,6 +168,74 @@ func SplitJobEnvToDeps(env, jsonEnv string) []JobDependency {
 		return deps
 	}
 
+	return deps
+}
+
+// SplitDeploymentEnvToDeps returns named Deployment dependencies, preferring JSON.
+// Invalid configuration is logged and skipped, like other dependency parsers.
+func SplitDeploymentEnvToDeps(env, jsonEnv string) []DeploymentDependency {
+	deps := []DeploymentDependency{}
+	jsonEnvVal := os.Getenv(jsonEnv)
+	if jsonEnvVal == "" {
+		for _, dep := range SplitEnvToDeps(env) {
+			if strings.TrimSpace(dep.Name) == "" {
+				logger.Warning.Printf("Invalid %s dependency: name is required", env)
+				continue
+			}
+			deps = append(deps, DeploymentDependency{Name: dep.Name, Namespace: dep.Namespace})
+		}
+		return deps
+	}
+
+	if os.Getenv(env) != "" {
+		logger.Warning.Printf("Ignoring %s since %s was specified", env, jsonEnv)
+	}
+	// Pointer values distinguish a JSON null from an expected empty string.
+	var configured []struct {
+		Name        string             `json:"name"`
+		Namespace   json.RawMessage    `json:"namespace"`
+		Annotations map[string]*string `json:"annotations"`
+	}
+	if err := json.Unmarshal([]byte(jsonEnvVal), &configured); err != nil {
+		logger.Warning.Printf("Invalid %s: expected an array of named Deployment dependencies: %v", jsonEnv, err)
+		return deps
+	}
+	if configured == nil {
+		logger.Warning.Printf("Invalid %s: expected an array of named Deployment dependencies, not null", jsonEnv)
+		return deps
+	}
+
+	for i, dep := range configured {
+		namespace := GetBaseNamespace()
+		if dep.Namespace != nil {
+			if string(dep.Namespace) == "null" {
+				logger.Warning.Printf("Invalid %s dependency %d: namespace must be a string, not null", jsonEnv, i+1)
+				return []DeploymentDependency{}
+			}
+			if err := json.Unmarshal(dep.Namespace, &namespace); err != nil {
+				logger.Warning.Printf("Invalid %s dependency %d: namespace must be a string: %v", jsonEnv, i+1, err)
+				return []DeploymentDependency{}
+			}
+			if namespace == "" {
+				namespace = GetBaseNamespace()
+			}
+		}
+		annotations := map[string]string{}
+		for key, value := range dep.Annotations {
+			if value == nil {
+				logger.Warning.Printf("Invalid %s dependency %d: annotation %q must be a string, not null", jsonEnv, i+1, key)
+				return []DeploymentDependency{}
+			}
+			annotations[key] = *value
+		}
+		if strings.TrimSpace(dep.Name) == "" {
+			logger.Warning.Printf("Invalid %s dependency %d: name is required", jsonEnv, i+1)
+			continue
+		}
+		deps = append(deps, DeploymentDependency{
+			Name: dep.Name, Namespace: namespace, Annotations: annotations,
+		})
+	}
 	return deps
 }
 

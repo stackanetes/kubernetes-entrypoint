@@ -16,9 +16,13 @@
 package env
 
 import (
+	"bytes"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
+
+	"opendev.org/airship/kubernetes-entrypoint/logger"
 )
 
 const (
@@ -300,5 +304,83 @@ func TestGetBaseNamespace(t *testing.T) {
 	getBaseNamespace := GetBaseNamespace()
 	if getBaseNamespace != "foo" {
 		t.Errorf("Expected namespace to be foo, got %v", getBaseNamespace)
+	}
+}
+
+func TestSplitDeploymentEnvToDeps(t *testing.T) {
+	tests := []struct {
+		name           string
+		plain          string
+		json           string
+		namespace      string
+		unsetNamespace bool
+		want           []DeploymentDependency
+		warning        string
+	}{
+		{name: "unset", want: []DeploymentDependency{}},
+		{name: "one plain", plain: "api", want: []DeploymentDependency{{Name: "api", Namespace: "default"}}},
+		{name: "unset namespace", plain: "api", unsetNamespace: true, want: []DeploymentDependency{{Name: "api", Namespace: "default"}}},
+		{name: "multiple plain", plain: "api,worker", namespace: "application", want: []DeploymentDependency{
+			{Name: "api", Namespace: "application"}, {Name: "worker", Namespace: "application"},
+		}},
+		{name: "cross namespace", plain: "api,other:worker", namespace: "application", want: []DeploymentDependency{
+			{Name: "api", Namespace: "application"}, {Name: "worker", Namespace: "other"},
+		}},
+		{name: "JSON annotations and namespace", json: `[{"name":"api","annotations":{"release":"42","empty":""}},{"name":"worker","namespace":"other","annotations":{}}]`, namespace: "application", want: []DeploymentDependency{
+			{Name: "api", Namespace: "application", Annotations: map[string]string{"release": "42", "empty": ""}},
+			{Name: "worker", Namespace: "other", Annotations: map[string]string{}},
+		}},
+		{name: "JSON missing annotations", json: `[{"name":"api"}]`, want: []DeploymentDependency{{Name: "api", Namespace: "default", Annotations: map[string]string{}}}},
+		{name: "JSON empty namespace", json: `[{"name":"api","namespace":""}]`, namespace: "application", want: []DeploymentDependency{{Name: "api", Namespace: "application", Annotations: map[string]string{}}}},
+		{name: "JSON null annotations", json: `[{"name":"api","annotations":null}]`, unsetNamespace: true, want: []DeploymentDependency{{Name: "api", Namespace: "default", Annotations: map[string]string{}}}},
+		{name: "JSON precedence", plain: "old", json: `[{"name":"api"}]`, want: []DeploymentDependency{{Name: "api", Namespace: "default", Annotations: map[string]string{}}}, warning: "Ignoring TEST_DEPLOYMENT since TEST_DEPLOYMENT_JSON was specified"},
+		{name: "empty JSON array takes precedence", plain: "old", json: `[]`, want: []DeploymentDependency{}, warning: "Ignoring TEST_DEPLOYMENT"},
+		{name: "malformed JSON", json: `[{"name":`, want: []DeploymentDependency{}, warning: "Invalid TEST_DEPLOYMENT_JSON"},
+		{name: "invalid JSON does not fall back to plain", plain: "old", json: `invalid`, want: []DeploymentDependency{}, warning: "Invalid TEST_DEPLOYMENT_JSON"},
+		{name: "JSON object instead of array", json: `{"name":"api"}`, want: []DeploymentDependency{}, warning: "expected an array"},
+		{name: "JSON null instead of array", json: `null`, want: []DeploymentDependency{}, warning: "not null"},
+		{name: "invalid name type", json: `[{"name":42}]`, want: []DeploymentDependency{}, warning: "cannot unmarshal number"},
+		{name: "invalid namespace type", json: `[{"name":"api","namespace":true}]`, want: []DeploymentDependency{}, warning: "cannot unmarshal bool"},
+		{name: "null namespace", json: `[{"name":"api","namespace":null}]`, want: []DeploymentDependency{}, warning: "namespace must be a string, not null"},
+		{name: "invalid annotation map type", json: `[{"name":"api","annotations":[]}]`, want: []DeploymentDependency{}, warning: "cannot unmarshal array"},
+		{name: "invalid annotation value type", json: `[{"name":"api","annotations":{"release":42}}]`, want: []DeploymentDependency{}, warning: "cannot unmarshal number"},
+		{name: "null annotation value", json: `[{"name":"api","annotations":{"release":null}}]`, want: []DeploymentDependency{}, warning: `annotation "release" must be a string, not null`},
+		{name: "invalid annotation value discards entire JSON configuration", json: `[{"name":"valid"},{"name":"api","annotations":{"release":null}}]`, want: []DeploymentDependency{}, warning: `dependency 2: annotation "release" must be a string, not null`},
+		{name: "missing name", json: `[{"namespace":"application"}]`, want: []DeploymentDependency{}, warning: "dependency 1: name is required"},
+		{name: "label selection unsupported", json: `[{"labels":{"app":"api"}}]`, want: []DeploymentDependency{}, warning: "name is required"},
+		{name: "empty name", json: `[{"name":""}]`, want: []DeploymentDependency{}, warning: "name is required"},
+		{name: "null name", json: `[{"name":null}]`, want: []DeploymentDependency{}, warning: "name is required"},
+		{name: "whitespace name", json: `[{"name":" "}]`, want: []DeploymentDependency{}, warning: "name is required"},
+		{name: "skip missing name only", json: `[{"name":""},{"name":"api"}]`, want: []DeploymentDependency{{Name: "api", Namespace: "default", Annotations: map[string]string{}}}, warning: "dependency 1: name is required"},
+		{name: "plain missing name", plain: "application:", want: []DeploymentDependency{}, warning: "name is required"},
+		{name: "plain empty entry", plain: ",api", want: []DeploymentDependency{{Name: "api", Namespace: "default"}}, warning: "name is required"},
+		{name: "plain invalid namespace", plain: ":api", want: []DeploymentDependency{}, warning: "missing namespace"},
+		{name: "plain too many colons", plain: "a:b:c", want: []DeploymentDependency{}, warning: "expected namespace:name"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Setenv("TEST_DEPLOYMENT", test.plain)
+			t.Setenv("TEST_DEPLOYMENT_JSON", test.json)
+			t.Setenv("NAMESPACE", test.namespace)
+			if test.unsetNamespace {
+				if err := os.Unsetenv("NAMESPACE"); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var warnings bytes.Buffer
+			previous := logger.Warning.Writer()
+			logger.Warning.SetOutput(&warnings)
+			t.Cleanup(func() { logger.Warning.SetOutput(previous) })
+			actual := SplitDeploymentEnvToDeps("TEST_DEPLOYMENT", "TEST_DEPLOYMENT_JSON")
+			if !reflect.DeepEqual(actual, test.want) {
+				t.Errorf("Expected: %#v Got: %#v", test.want, actual)
+			}
+			if test.warning == "" && warnings.Len() != 0 {
+				t.Errorf("Unexpected warning: %s", warnings.String())
+			}
+			if !strings.Contains(warnings.String(), test.warning) {
+				t.Errorf("Expected warning %q Got: %s", test.warning, warnings.String())
+			}
+		})
 	}
 }

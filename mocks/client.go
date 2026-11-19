@@ -29,6 +29,7 @@ type Client struct {
 	v1core.PodInterface
 	v1core.ServiceInterface
 	v1apps.DaemonSetInterface
+	v1apps.DeploymentInterface
 	discoveryv1client.EndpointSliceInterface
 	v1batch.JobInterface
 
@@ -46,6 +47,10 @@ func (c Client) Services(namespace string) v1core.ServiceInterface {
 
 func (c Client) DaemonSets(namespace string) v1apps.DaemonSetInterface {
 	return c.DaemonSetInterface
+}
+
+func (c Client) Deployments(namespace string) v1apps.DeploymentInterface {
+	return c.DeploymentInterface
 }
 
 func (c Client) EndpointSlices(namespace string) discoveryv1client.EndpointSliceInterface {
