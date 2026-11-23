@@ -60,6 +60,83 @@ Example:
 
 A simple example of how to use downward API to get `POD_NAME` can be found [here](https://raw.githubusercontent.com/kubernetes/kubernetes.github.io/master/docs/user-guide/downward-api/dapi-pod.yaml).
 
+### CronJob
+
+Waits for a named `batch/v1` CronJob to have the expected **top-level metadata
+annotations and/or labels**, then waits until no unfinished Jobs from older
+versions remain:
+
+```sh
+DEPENDENCY_CRONJOB_JSON='[{"name":"cleanup","namespace":"application","annotations":{"example.com/release-id":"my-release:42"}}]'
+# Labels can be used instead of, or together with, annotations:
+DEPENDENCY_CRONJOB_JSON='[{"name":"cleanup","labels":{"app.kubernetes.io/version":"v42"}}]'
+```
+
+`name` is required; `namespace` defaults to `NAMESPACE`, or `default` if unset.
+Every expected annotation and label must exist and match exactly, including
+empty-string values. Extra actual metadata is allowed. Labels are expectations
+on the named CronJob, not selectors. A different or newer marker is not accepted.
+Job-template metadata alone does not substitute for top-level CronJob metadata.
+
+To identify the version of generated Jobs, copy the same expected markers into
+`spec.jobTemplate.metadata` (**not** `spec.jobTemplate.spec.template.metadata`).
+Jobs missing any expected marker, or having different values, are treated as old.
+Jobs matching every expected marker may keep running without blocking the dependency.
+Only Jobs controlled by this named CronJob in its namespace are considered;
+unfinished Jobs from a previous incarnation of that CronJob also block. Unrelated
+and manually created Jobs without a CronJob controller reference are ignored.
+
+An old Job is finished when it has a `Complete=True` or `Failed=True` condition
+and no active or reported terminating Pods. Pending, retrying, suspended and
+terminating old Jobs still block, even with zero active Pods. Successful and
+failed history entries do not block. The CronJob need not schedule a new Job:
+an already-updated CronJob with no unfinished old Jobs resolves immediately.
+
+Without version markers, the plain form (or JSON with empty metadata maps)
+waits for the CronJob to exist and **all** its unfinished Jobs to drain; it cannot
+distinguish an old release that has not yet been updated:
+
+```sh
+DEPENDENCY_CRONJOB=cleanup,other-namespace:backup
+```
+
+When both variables are nonempty, JSON takes precedence with a warning. Invalid
+configuration is logged and may **skip dependencies rather than terminate the
+process**, following existing registration behavior. Malformed JSON or invalid
+field types skip the JSON configuration; entries missing a name are skipped.
+
+#### Helm release-aware ordering
+
+Render a shared release marker on the CronJob and its Job template:
+
+```yaml
+metadata:
+  annotations:
+    example.com/release-id: "{{ .Release.Name }}:{{ .Release.Revision }}"
+spec:
+  jobTemplate:
+    metadata:
+      annotations:
+        example.com/release-id: "{{ .Release.Name }}:{{ .Release.Revision }}"
+```
+
+Use the same marker in the waiting container's environment:
+
+```yaml
+env:
+  - name: DEPENDENCY_CRONJOB_JSON
+    value: >-
+      [{"name":"cleanup","annotations":{"example.com/release-id":"{{ .Release.Name }}:{{ .Release.Revision }}"}}]
+```
+
+Unlike Deployments, CronJobs have no `status.observedGeneration` acknowledgement.
+This dependency checks the submitted metadata and the actual Job list, not
+`status.active`. It rechecks the CronJob before accepting success, but polling
+does not lock scheduling or prevent subsequent updates. Use unique version
+markers and update the CronJob and Job-template markers together with its spec.
+The waiting container needs RBAC permissions to `get` `batch/cronjobs` and
+`list` `batch/jobs` in each dependency namespace.
+
 ### Job
 Checks if a given job or set of jobs with matching name and/or labels succeeded at least once.
 In order to use labels, `DEPENDENCY_JOBS_JSON` must be used.

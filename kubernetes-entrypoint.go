@@ -21,6 +21,7 @@ import (
 
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/config"
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/container"
+	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/cronjob"
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/customresource"
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/daemonset"
 	_ "opendev.org/airship/kubernetes-entrypoint/dependencies/job"

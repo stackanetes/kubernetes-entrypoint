@@ -37,6 +37,7 @@ import (
 type ClientInterface interface {
 	Pods(string) v1core.PodInterface
 	Jobs(string) v1batch.JobInterface
+	CronJobs(string) v1batch.CronJobInterface
 	EndpointSlices(string) discoveryv1client.EndpointSliceInterface
 	DaemonSets(string) appsv1.DaemonSetInterface
 	Services(string) v1core.ServiceInterface
@@ -53,6 +54,10 @@ func (c Client) Pods(namespace string) v1core.PodInterface {
 
 func (c Client) Jobs(namespace string) v1batch.JobInterface {
 	return c.client.BatchV1().Jobs(namespace)
+}
+
+func (c Client) CronJobs(namespace string) v1batch.CronJobInterface {
+	return c.client.BatchV1().CronJobs(namespace)
 }
 
 func (c Client) EndpointSlices(namespace string) discoveryv1client.EndpointSliceInterface {

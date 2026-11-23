@@ -31,6 +31,7 @@ type Client struct {
 	v1apps.DaemonSetInterface
 	discoveryv1client.EndpointSliceInterface
 	v1batch.JobInterface
+	v1batch.CronJobInterface
 
 	FakeCustomResource *unstructured.Unstructured
 	Err                error
@@ -54,6 +55,10 @@ func (c Client) EndpointSlices(namespace string) discoveryv1client.EndpointSlice
 
 func (c Client) Jobs(namespace string) v1batch.JobInterface {
 	return c.JobInterface
+}
+
+func (c Client) CronJobs(namespace string) v1batch.CronJobInterface {
+	return c.CronJobInterface
 }
 
 func (c Client) CustomResource(
