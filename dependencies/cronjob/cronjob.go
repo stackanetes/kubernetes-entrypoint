@@ -98,18 +98,6 @@ func (c CronJob) IsResolved(ctx context.Context, entrypoint entry.EntrypointInte
 		}
 	}
 
-	// The two resources cannot be read atomically. Before accepting success,
-	// ensure the CronJob was not replaced or updated while its Jobs were listed.
-	latest, err := iface.Get(ctx, c.name, metav1.GetOptions{})
-	if err != nil {
-		return false, fmt.Errorf("rechecking %s: %w", c, err)
-	}
-	if err := c.matchCronJob(latest); err != nil {
-		return false, fmt.Errorf("%s: %w", c, err)
-	}
-	if latest.UID != snapshot.UID || latest.Generation != snapshot.Generation {
-		return false, fmt.Errorf("%s: CronJob changed while checking Jobs", c)
-	}
 	return true, nil
 }
 

@@ -74,9 +74,9 @@ DEPENDENCY_CRONJOB_JSON='[{"name":"cleanup","labels":{"app.kubernetes.io/version
 
 `name` is required; `namespace` defaults to `NAMESPACE`, or `default` if unset.
 Every expected annotation and label must exist and match exactly, including
-empty-string values. Extra actual metadata is allowed. Labels are expectations
-on the named CronJob, not selectors. A different or newer marker is not accepted.
-Job-template metadata alone does not substitute for top-level CronJob metadata.
+empty-string values. Labels are expectations on the named CronJob, not selectors. 
+A different or newer marker is not accepted. Job-template metadata alone does not
+substitute for top-level CronJob metadata.
 
 To identify the version of generated Jobs, copy the same expected markers into
 `spec.jobTemplate.metadata` (**not** `spec.jobTemplate.spec.template.metadata`).

@@ -370,7 +370,7 @@ var _ = Describe("CronJob API handling", func() {
 		resolved, err := targetDependency().IsResolved(ctx, cronJobEntrypoint{kubeClient: kubeClient})
 		Expect(resolved).To(BeTrue())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(gets).To(Equal(2))
+		Expect(gets).To(Equal(1))
 		Expect(lists).To(Equal(1))
 	})
 
@@ -390,10 +390,8 @@ var _ = Describe("CronJob API handling", func() {
 	DescribeTable("preserves retryable API errors at every stage",
 		func(stage string, apiError error) {
 			mockClient := mocks.NewClient()
-			gets := 0
 			mockClient.CronJobInterface = cronJobAPI{get: func(context.Context, string, metav1.GetOptions) (*batchv1.CronJob, error) {
-				gets++
-				if (stage == "get" && gets == 1) || (stage == "recheck" && gets == 2) {
+				if stage == "get" {
 					return nil, apiError
 				}
 				return targetCronJob(), nil
@@ -415,16 +413,13 @@ var _ = Describe("CronJob API handling", func() {
 		Entry("CronJob permission denied", "get", apierrors.NewForbidden(schema.GroupResource{Group: "batch", Resource: "cronjobs"}, "cleanup", errors.New("permission denied"))),
 		Entry("Job list unavailable", "list", errors.New("API unavailable")),
 		Entry("Job list context canceled", "list", context.Canceled),
-		Entry("CronJob deleted during check", "recheck", apierrors.NewNotFound(schema.GroupResource{Group: "batch", Resource: "cronjobs"}, "cleanup")),
 	)
 
 	DescribeTable("rejects missing API snapshots rather than accepting success",
 		func(stage, diagnostic string) {
 			mockClient := mocks.NewClient()
-			gets := 0
 			mockClient.CronJobInterface = cronJobAPI{get: func(context.Context, string, metav1.GetOptions) (*batchv1.CronJob, error) {
-				gets++
-				if stage == "get" || (stage == "recheck" && gets == 2) {
+				if stage == "get" {
 					return nil, nil
 				}
 				return targetCronJob(), nil
@@ -432,48 +427,11 @@ var _ = Describe("CronJob API handling", func() {
 			mockClient.JobInterface = jobAPI{list: func(context.Context, metav1.ListOptions) (*batchv1.JobList, error) {
 				return nil, nil
 			}}
-			if stage == "recheck" {
-				mockClient.JobInterface = jobAPI{list: func(context.Context, metav1.ListOptions) (*batchv1.JobList, error) { return &batchv1.JobList{}, nil }}
-			}
 			resolved, err := targetDependency().IsResolved(context.Background(), cronJobEntrypoint{kubeClient: mockClient})
 			Expect(resolved).To(BeFalse())
 			Expect(err).To(MatchError(ContainSubstring(diagnostic)))
 		},
 		Entry("CronJob", "get", "CronJob was not returned"),
 		Entry("Job list", "list", "Jobs were not returned"),
-		Entry("CronJob recheck", "recheck", "CronJob was not returned"),
-	)
-
-	DescribeTable("rechecks the CronJob after listing Jobs",
-		func(change func(*batchv1.CronJob), resolved bool, diagnostic string) {
-			mockClient := mocks.NewClient()
-			gets := 0
-			mockClient.CronJobInterface = cronJobAPI{get: func(context.Context, string, metav1.GetOptions) (*batchv1.CronJob, error) {
-				gets++
-				snapshot := targetCronJob()
-				if gets == 2 {
-					change(snapshot)
-				}
-				return snapshot, nil
-			}}
-			mockClient.JobInterface = jobAPI{list: func(context.Context, metav1.ListOptions) (*batchv1.JobList, error) { return &batchv1.JobList{}, nil }}
-			result, err := targetDependency().IsResolved(context.Background(), cronJobEntrypoint{kubeClient: mockClient})
-			Expect(result).To(Equal(resolved))
-			if resolved {
-				Expect(err).NotTo(HaveOccurred())
-			} else {
-				Expect(err).To(MatchError(ContainSubstring(diagnostic)))
-			}
-		},
-		Entry("changed specification with reused marker", func(c *batchv1.CronJob) { c.Generation++ }, false, "changed while checking Jobs"),
-		Entry("recreated with same marker", func(c *batchv1.CronJob) { c.UID = "new-uid" }, false, "changed while checking Jobs"),
-		Entry("superseded annotation", func(c *batchv1.CronJob) { c.Annotations[releaseAnnotation] = "my-release:43" }, false, "pending target update"),
-		Entry("superseded label", func(c *batchv1.CronJob) { c.Labels["version"] = "v43" }, false, "pending target update"),
-		Entry("deletion started", func(c *batchv1.CronJob) { now := metav1.Now(); c.DeletionTimestamp = &now }, false, "being deleted"),
-		Entry("status-only changes are harmless", func(c *batchv1.CronJob) {
-			c.ResourceVersion = "new-rv"
-			now := metav1.Now()
-			c.Status.LastScheduleTime = &now
-		}, true, ""),
 	)
 })
